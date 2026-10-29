@@ -54,7 +54,8 @@ a { color: var(--s0); }
 // runs each registered drawing when data arrives, the width changes or a tab opens.
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
-    'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory'];
+    'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -187,6 +188,13 @@ window.dash = (() => {
 .rx-rounds h4 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
 .rx-rounds p { margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.55; color: var(--color-fg-muted); }
 .rx-quote { margin: 0; padding: var(--cds-pad-md) var(--cds-pad-lg); border-left: 3px solid var(--color-fg); font-size: var(--cds-font-size-body); line-height: 1.55; max-width: 75ch; }
+.rx-fw { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--cds-gap-md); }
+.rx-fw-axis { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.rx-fw-axis h4 { margin: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.rx-fw-item { display: flex; flex-direction: column; gap: 2px; padding-top: var(--cds-pad-xs); border-top: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); line-height: 1.45; }
+.rx-fw-item b { font-weight: var(--cds-font-weight-medium); display: flex; justify-content: space-between; gap: 8px; }
+.rx-fw-item span { color: var(--color-fg-muted); }
+.rx-fw-item.waiting b, .rx-fw-item.waiting span { color: var(--color-fg-muted); opacity: .75; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -201,6 +209,7 @@ window.dash = (() => {
     <button class="rx-tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
     <button class="rx-tab" role="tab" data-tab="agent1" aria-selected="false">Agent 1 · Fundamentals</button>
     <button class="rx-tab" role="tab" data-tab="agent2" aria-selected="false">Agent 2 · Alternative data</button>
+    <button class="rx-tab" role="tab" data-tab="agent3" aria-selected="false">Agent 3 · Competitors</button>
     <button class="rx-tab" role="tab" data-tab="debate" aria-selected="false">Debate</button>
     <button class="rx-tab" role="tab" data-tab="data-checks" aria-selected="false">Data &amp; checks</button>
   </nav>
@@ -211,6 +220,7 @@ window.dash = (() => {
       <div class="rx-tile"><span class="rx-tile-l">Share price</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=price" data-fmt="yen">—</span><span class="rx-tile-s">Close, yfinance</span></div>
       <div class="rx-tile"><span class="rx-tile-l">Agent 1 target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent1_target" data-fmt="yen">—</span><span class="rx-tile-s"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=upside" data-fmt="spct" data-tone="sign">—</span> vs price</span></div>
       <div class="rx-tile"><span class="rx-tile-l">Agent 2 adjusted target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent2_target" data-fmt="yen">—</span><span class="rx-tile-s">If its signals were applied</span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Agent 3 adjusted target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent3_target" data-fmt="yen">—</span><span class="rx-tile-s">If its peer premium were applied</span></div>
       <div class="rx-tile"><span class="rx-tile-l">Debate final target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=debate_target" data-fmt="yen">—</span><span class="rx-tile-s">Run on <span data-draw="fact" data-source="facts" data-field="text" data-where="section=debate&amp;metric=run_at" data-fmt="text">—</span></span></div>
       <div class="rx-tile"><span class="rx-tile-l">Analyst mean target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=analyst_target" data-fmt="yen">—</span><span class="rx-tile-s">For reference only</span></div>
       <div class="rx-tile"><span class="rx-tile-l">Adjusted alpha</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=adjusted_alpha" data-fmt="spct2">—</span><span class="rx-tile-s">View: <span data-draw="fact" data-source="facts" data-field="text" data-where="section=headline&amp;metric=direction" data-fmt="text">—</span></span></div>
@@ -240,10 +250,11 @@ window.dash = (() => {
       <h2 class="rx-h2">How the agents work</h2>
       <p>The agents extract, calculate and flag problems. Final judgement on every assumption stays with me, and each value records who decided it (company disclosure, agent placeholder or student).</p>
       <div class="rx-flow">
-        <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data gathered</h4><ul><li>Earnings releases (tanshin) and EDINET filings</li><li>yfinance prices, consensus, analyst targets</li><li>Financials of listed peers</li><li>Google Trends, JNTO, UV index, Rakuten</li></ul></div>
+        <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data gathered</h4><ul><li>Earnings releases (tanshin) and EDINET filings</li><li>yfinance prices, consensus, analyst targets</li><li>Financials of listed peers</li><li>Google Trends, JNTO, UV index, Rakuten</li><li>TDnet disclosures, ad &amp; promotion spend of peers</li></ul></div>
         <div class="rx-step"><span class="rx-step-k">Agent 1</span><h4>Fundamentals</h4><p>Checks the data, forecasts FY2027/3–FY2028/3, values Rohto on its own multiples and on peer multiples, then blends the two into a target price.</p></div>
         <div class="rx-step"><span class="rx-step-k">Agent 2</span><h4>Alternative data</h4><p>Turns this year's search, weather and tourism signals into a change in Japan revenue, EPS and target price, and suggests raising or lowering confidence. It does not set its own target.</p></div>
-        <div class="rx-step"><span class="rx-step-k">Debate</span><h4>Moderator</h4><p>The two agents argue in rounds. A moderator weighs them and sets the final target price and confidence.</p></div>
+        <div class="rx-step"><span class="rx-step-k">Agent 3</span><h4>Competitor intelligence</h4><p>Compares Rohto with its peers on the same definitions, filed under the 3Cs and 4Ps, and proposes a premium or discount on Agent 1's peer multiple. It does not set its own target.</p></div>
+        <div class="rx-step"><span class="rx-step-k">Debate</span><h4>Moderator</h4><p>The agents argue in rounds. A moderator weighs them and sets the final target price and confidence.</p></div>
         <div class="rx-step"><span class="rx-step-k">Output</span><h4>Active view</h4><p>Target, expected return, confidence-adjusted alpha and direction go to the seminar dashboard. A systemd timer reruns both agents every week.</p></div>
       </div>
     </section>
@@ -383,6 +394,73 @@ window.dash = (() => {
     </section>
   </section>
 
+  <!-- ===================== AGENT 3 ===================== -->
+  <section class="rx-page" id="agent3" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">From competitive position to the target price</h2>
+      <p>Agent 1 values Rohto partly on the median multiple of its peers. Agent 3 asks whether Rohto deserves a premium or discount to that median. Each comparison scores +1, 0 or −1; each point is worth <b data-draw="fact" data-source="assumptions" data-field="value" data-where="agent=Agent 3&amp;field=valuation.premium_per_point" data-fmt="pct0">—</b> of the peer multiple, capped at <b data-draw="fact" data-source="assumptions" data-field="value" data-where="agent=Agent 3&amp;field=valuation.max_premium" data-fmt="pct0">—</b>, and applies only to the peer-multiple part of Agent 1's target.</p>
+      <div class="rx-card">
+        <h3>How the comparison moves the target</h3>
+        <div class="rx-chain">
+          <div><span class="rx-tile-l">Position score</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=position_score" data-fmt="sn0" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">Premium on peer multiple</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=premium" data-fmt="spct0" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">× Peer valuation × weight</span><span class="rx-tile-v"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=peer_multiple_target_price" data-fmt="yen">—</span> × <span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=peer_weight" data-fmt="n2">—</span></span></div>
+          <div><span class="rx-tile-l">Target price change</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=target_price_impact" data-fmt="syen" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">Agent 1 → if applied</span><span class="rx-tile-v"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=agent1_target_price" data-fmt="yen">—</span> → <span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=target_price_if_applied" data-fmt="yen">—</span></span></div>
+          <div><span class="rx-tile-l">Confidence suggested</span><span class="rx-tile-v"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=confidence_current" data-fmt="n2">—</span> → <span data-draw="fact" data-source="facts" data-field="value" data-where="section=competitor&amp;metric=confidence_suggested" data-fmt="n2">—</span></span></div>
+        </div>
+        <p class="rx-note">Confidence is never raised until store visits compare Rohto and its peers on the same shelf. Search share is the same data Agent 2 uses, so here it moves the multiple only, never EPS.</p>
+      </div>
+      <div class="rx-card">
+        <h3>Each comparison, Rohto minus the peer median</h3>
+        <p>A gap beyond the threshold scores +1 or −1. Grey rows have no data yet and are not scored.</p>
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="competitor_components">
+            <thead><tr><th>Comparison</th><th class="n">Gap</th><th class="n">Threshold</th><th class="n">Score</th></tr></thead>
+            <tbody data-draw="comp-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">3C × 4P</h2>
+      <p>Every piece of evidence filed under Customer, Competitor and Company, and Product, Price, Place and Promotion. <b>Scored</b> items move the premium, <b>reference</b> items are shown but not scored (price, for one, can mean strength or weakness), and <b>waiting</b> items need data, mostly store visits.</p>
+      <div class="rx-card"><h3>The 3Cs</h3><div class="rx-fw" data-draw="fw" data-frame="3C" data-source="framework"></div></div>
+      <div class="rx-card"><h3>The 4Ps</h3><div class="rx-fw" data-draw="fw" data-frame="4P" data-source="framework"></div></div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Advertising and promotion spend</h2>
+      <p>Advertising plus sales promotion from each company's latest annual report (EDINET XBRL). Companies split the two lines differently, so they are compared as one total. Shiseido does not tag them and is left blank; Kobayashi is greyed because it is excluded from the peer set.</p>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>A&amp;P as a share of sales</h3>
+          <p>Rohto in colour; the dashed line is the peer median.</p>
+          <div class="rx-chart" data-draw="ap-chart" data-source="ad_spend"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Promotion efficiency</h3>
+          <p>Sales growth minus A&amp;P growth, last fiscal year. Positive means sales grew faster than the money spent to promote them. Dashed line: peer median.</p>
+          <div class="rx-chart" data-draw="eff-chart" data-source="ad_spend"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Disclosures that can change the comparison</h2>
+      <p>TDnet filings of Rohto and seven peers over the last 180 days, excluding routine results, dividends and buybacks. Titles are as filed, in Japanese.</p>
+      <div class="rx-card">
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="competitor_events">
+            <thead><tr><th>Date</th><th>Company</th><th>Type</th><th>Direction</th><th>Title</th></tr></thead>
+            <tbody data-draw="events-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </section>
+
   <!-- ===================== DEBATE ===================== -->
   <section class="rx-page" id="debate" role="tabpanel" hidden>
     <section class="rx-sec">
@@ -498,6 +576,8 @@ window.R = (() => {
     x: (v) => d3.format('.1f')(v) + '×',
     n2: d3.format('.2f'),
     sn2: (v) => sign(v) + d3.format('.2f')(Math.abs(v)),
+    sn0: (v) => sign(v) + d3.format('.0f')(Math.abs(v)),
+    spct0: (v) => sign(v) + d3.format('.0%')(Math.abs(v)),
   };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   // Returns true (and draws the empty / failed state) when any source isn't ready.
@@ -1012,6 +1092,73 @@ dash.draw('debate-chart', (node) => {
   s.append('g').selectAll('text').data(labels).join('text').attr('class', 'rx-lab').attr('x', (d) => d.x).attr('y', (d) => d.y).attr('fill', (d) => d.c).text((d) => d.t);
 });
 
+// Agent 3
+dash.draw('comp-body', (tb) => {
+  if (R.wait(tb, ['competitor_components'])) return;
+  const f = (v, u) => (v === '' || v == null ? '—' : u === '差' ? R.F.spct(+v) : R.F.sn2(+v) + (u === 'pt' ? 'pt' : ''));
+  const th = (v, u) => (u === '差' ? '±' + d3.format('.0%')(+v) : '±' + v + (u === 'pt' ? 'pt' : ''));
+  tb.replaceChildren(...R.rows('competitor_components').map((r) => {
+    const tr = R.el('tr', r.score === '' ? 'rx-off' : null);
+    const sc = R.el('td', 'n');
+    if (r.score === '') sc.textContent = 'not scored';
+    else sc.append(R.el('span', 'rx-pill ' + (+r.score > 0 ? 'ok' : +r.score < 0 ? 'bad' : 'info'), R.F.sn0(+r.score)));
+    tr.append(R.el('td', null, r.name_en), R.el('td', 'n', f(r.value, r.unit)), R.el('td', 'n', th(r.threshold, r.unit)), sc);
+    return tr;
+  }));
+});
+
+dash.draw('fw', (node) => {
+  if (R.wait(node, ['framework'])) return;
+  node.replaceChildren();
+  const rows = R.rows('framework').filter((r) => r.frame === node.dataset.frame);
+  for (const [axis, items] of d3.groups(rows, (r) => r.axis)) {
+    const box = R.el('div', 'rx-fw-axis');
+    const h = R.el('h4', null, axis);
+    const cov = items.some((i) => i.use === 'scored') ? 'scored' : items.some((i) => i.use === 'reference') ? 'reference' : 'waiting';
+    h.append(R.el('span', 'rx-pill ' + (cov === 'scored' ? 'ok' : cov === 'reference' ? 'info' : 'warning'), cov));
+    box.append(h);
+    for (const i of items) {
+      const it = R.el('div', 'rx-fw-item ' + i.use);
+      const t = R.el('b', null, i.item);
+      t.append(R.el('span', null, i.use === 'scored' ? 'score ' + R.F.sn0(+i.score) : i.use));
+      it.append(t, R.el('span', null, i.evidence));
+      box.append(it);
+    }
+    node.append(box);
+  }
+});
+
+const apItems = (key) => R.rows('ad_spend').filter((r) => r[key] !== '').map((r) => ({
+  label: r.company_en, value: +r[key], role: r.role,
+  color: r.role === 'self' ? R.C(2) : r.role === 'excluded' ? 'var(--cds-chart-muted)' : 'var(--color-fg-muted)', strong: r.role === 'self', period: r.period,
+})).sort((a, b) => b.value - a.value);
+const apMedian = (key) => d3.median(R.rows('ad_spend').filter((r) => r.role === 'peer' && r[key] !== ''), (r) => +r[key]);
+
+dash.draw('ap-chart', (node) => {
+  if (R.wait(node, ['ad_spend'])) return;
+  node.replaceChildren();
+  R.hbars(node, { items: apItems('ap_ratio'), fmt: R.F.pct, tickFmt: d3.format('.0%'), row: 28, refs: [{ value: apMedian('ap_ratio') }],
+    tip: (d) => [{ name: 'A&P / sales', value: R.F.pct(d.value) }, { name: 'Fiscal year', value: d.period }] });
+});
+
+dash.draw('eff-chart', (node) => {
+  if (R.wait(node, ['ad_spend'])) return;
+  node.replaceChildren();
+  const items = apItems('efficiency_pt').filter((d) => d.role !== 'excluded').map((d) => ({ ...d, value: d.value / 100 }));
+  R.hbars(node, { items, fmt: R.F.spct, tickFmt: d3.format('+.0%'), row: 28, refs: [{ value: apMedian('efficiency_pt') / 100 }],
+    tip: (d) => [{ name: 'Sales − A&P growth', value: R.F.spct(d.value) }, { name: 'Fiscal year', value: d.period }] });
+});
+
+dash.draw('events-body', (tb) => {
+  if (R.wait(tb, ['competitor_events'])) return;
+  tb.replaceChildren(...R.rows('competitor_events').map((r) => {
+    const tr = R.el('tr', r.company_en === 'Rohto' ? 'rx-self' : null);
+    const t = R.el('td'); const a = R.el('a', null, r.title); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; t.append(a);
+    tr.append(R.el('td', null, r.date), R.el('td', null, r.company_en), R.el('td', null, r.category), R.el('td', null, r.direction || (r.category === 'guidance revision' ? 'not confirmed' : '—')), t);
+    return tr;
+  }));
+});
+
 // Data & checks
 dash.draw('inv-body', (tb) => {
   if (R.wait(tb, ['inventory'])) return;
@@ -1095,6 +1242,10 @@ dash.draw('warn-body', (tb) => {
     <li><a href="data/assumptions.csv">assumptions.csv</a></li>
     <li><a href="data/warnings.csv">warnings.csv</a></li>
     <li><a href="data/inventory.csv">inventory.csv</a></li>
+    <li><a href="data/competitor_components.csv">competitor_components.csv</a></li>
+    <li><a href="data/framework.csv">framework.csv</a></li>
+    <li><a href="data/ad_spend.csv">ad_spend.csv</a></li>
+    <li><a href="data/competitor_events.csv">competitor_events.csv</a></li>
   </ul>
 </footer>
 </main>

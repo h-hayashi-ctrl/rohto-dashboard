@@ -38,3 +38,14 @@ Agent 2,model.china_weight_in_inbound,0.5,agent,インバウンド購買に占�
 Agent 2,model.incremental_op_margin,0.2,agent,売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き
 Agent 2,confidence.base,0.3,agent,Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す
 Agent 2,confidence.step,0.05,agent,シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する
+Agent 3,disclosures.lookback_days,180,agent,2四半期分。直近の決算期の業績予想の修正を少なくとも1回は含める
+Agent 3,scorecard.revenue_growth_gap,0.02,agent,売上成長率の差 2%pt。決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える
+Agent 3,scorecard.op_margin_gap,0.02,agent,営業利益率の差 2%pt
+Agent 3,scorecard.search_share_change_pt,1.0,agent,検索シェアの前年同期からの変化（カテゴリ平均）1%pt。Googleトレンドの丸め誤差より大きい変化だけを数える
+Agent 3,scorecard.shelf_share_change_pt,2.0,agent,棚のフェイスシェアの、最初と最後の訪問の差 2%pt（同じ店・同じカテゴリ）
+Agent 3,scorecard.stockout_gap_pt,5.0,agent,欠品率の差 5%pt（ロートが競合NBより低ければ +1）
+Agent 3,scorecard.min_visits,3,agent,シラバス Session 5「同じ場所を少なくとも3回」。これ未満の店・カテゴリは点数に入れない
+Agent 3,valuation.premium_per_point,0.02,agent,1点あたり競合倍率の ±2%。検証していない仮置き
+Agent 3,valuation.max_premium,0.06,agent,上限 ±6%。公開情報だけで大きな差をつけない
+Agent 3,confidence.step,0.05,agent,Agent 2 と同じ幅（方向がそろえば +0.05、ばらばらなら −0.05）
+Agent 3,marketing.ap_efficiency_gap_pt,3.0,agent,差 3%pt。広告販促費の定義の違いと決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える

@@ -1,0 +1,8 @@
+name,name_en,value,unit,threshold,score
+売上成長率（会社予想）,Revenue growth (company forecast),0.0428,差,0.02,1
+営業利益率（会社予想）,Operating margin (company forecast),0.0244,差,0.02,1
+検索シェアの変化,Share-of-search change,1.43,pt,1.0,1
+業績予想の修正の方向,Guidance revisions,,回,0.5,
+棚のフェイスシェアの変化,Shelf facing share change,,pt,2.0,
+欠品率の差（競合NB − ロート）,Stock-out gap (peer brands − Rohto),,pt,5.0,
+販促の効率（売上の伸び − 広告販促費の伸び）,Promotion efficiency (sales growth − A&P growth),4.72,pt,3.0,1

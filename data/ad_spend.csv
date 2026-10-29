@@ -1,0 +1,9 @@
+ticker,company_en,role,period,ap_ratio,sales_growth,ap_growth,efficiency_pt
+4452,Kao,peer,FY2025/12,0.0896,0.037,0.0607,-2.37
+4527,Rohto,self,FY2026/3,0.1821,0.1137,0.0886,2.51
+4536,Santen,peer,FY2026/3,0.0484,-0.0279,0.0607,-8.86
+4911,Shiseido,peer,FY2025/12,,,,
+4912,Lion,peer,FY2025/12,0.1461,0.0222,-0.0225,4.47
+4922,Kose,peer,FY2025/12,0.2283,0.023,-0.0198,4.28
+4927,Pola Orbis,peer,FY2025/12,0.1361,-0.0004,0.0217,-2.21
+4967,Kobayashi,excluded,FY2025/12,0.1017,0.0009,0.4568,-45.59

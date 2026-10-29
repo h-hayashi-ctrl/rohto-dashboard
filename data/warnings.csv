@@ -26,90 +26,118 @@ id,agent,level,code,message,ref
 25,Agent 1,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.5 / 目標株価 = (1−w)×自社倍率の評価 + w×競合倍率の評価。仮置き0.5（10/15の議論ではモデレーターが競合比較に0.55）,valuation.peer_weight
 26,Agent 1,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / クラス統一値に置換,portfolio.benchmark_expected_return
 27,Agent 1,info,DILUTION,潜在株式 9.497百万株（CB等）あり。目標株価は基本株式数ベース,
-28,Agent 1,info,SOURCE_MISMATCH,"csv 41,118.00 と yfinance 41,122.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2026/3
-29,Agent 1,info,SOURCE_MISMATCH,"csv 38,234.00 と yfinance 38,239.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2025/3
-30,Agent 1,info,SOURCE_MISMATCH,"csv 40,048.00 と yfinance 40,052.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2024/3
-31,Agent 1,info,SOURCE_MISMATCH,"csv 33,959.00 と yfinance 33,964.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2023/3
-32,Agent 1,warning,CONSENSUS_GAP,予想EPS 155.8円 vs コンセンサス 162.2円（10人、156.44〜175.59）差 -4.0%。コンセンサスと違う理由を説明できるか確認,FY2027/3
-33,Agent 1,info,CONSENSUS_GAP,予想EPS 166.6円 vs コンセンサス 172.2円（9人、165.07〜194.17）差 -3.2%,FY2028/3
-34,Agent 1,info,MULTIPLE_RANGE,目標PER 18.0倍 / 過去の実績PER 中央値 22.61倍（25〜75%: 18.6〜25.64倍）,
-35,Agent 1,info,ANALYST_TARGET,目標株価 2901円 vs アナリスト平均 3349円（11人）差 -13.4%,
-36,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 2: 株価 2026-10-14
-37,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4452 line 2: 株価 2026-10-14
-38,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後,4452 line 3: 発行済株式数(自己株除く) 2026/6末
-39,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 4: 時価総額 2026-10-14
-40,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後(分割前換算298.42円)。前回予想143.70円,4452 line 8: EPS(基本) FY2026/12予
-41,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 9: 1株配当 FY2026/12予
-42,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後換算:中間78円(分割前)=39円+期末予想39円。会社は年間合計を非開示(分割前換算156円),4452 line 9: 1株配当 FY2026/12予
-43,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後。分割前は260.30円(2025年12月期短信),4452 line 13: EPS(基本) FY2025/12
-44,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後,4452 line 20: BPS 2026/6末
-45,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 21: ベータ(Yahoo・S&P500比) 2026-10-15
-46,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4452 line 21: ベータ(Yahoo・S&P500比) 2026-10-15
-47,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 2: 株価 2026-10-14
-48,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4912 line 2: 株価 2026-10-14
-49,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 4: 時価総額 2026-10-14
-50,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 21: BPS 2026/6末
-51,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-52,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4912 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-53,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4536 line 2: 株価 2026-10-14
-54,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4536 line 2: 株価 2026-10-14
-55,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4536 line 4: 時価総額 2026-10-14
-56,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4536 line 4: 時価総額 2026-10-14
-57,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: IFRSフルベース。コア営業利益は55143百万円(製品に係る無形資産償却費等を除く会社定義),4536 line 6: 営業利益 FY2026/3
-58,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 2: 株価 2026-10-14
-59,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 2: 株価 2026-10-14
-60,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 4: 時価総額 2026-10-14
-61,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 4: 時価総額 2026-10-14
-62,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 5: ベータ(Yahoo・S&P500比) 2026-10-15
-63,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 5: ベータ(Yahoo・S&P500比) 2026-10-15
-64,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 6: ベータ 2026-10-14
-65,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 2: 株価 2026-10-14
-66,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 2: 株価 2026-10-14
-67,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 3: 時価総額 2026-10-15
-68,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 3: 時価総額 2026-10-15
-69,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 20: BPS 2026/6末
-70,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-71,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-72,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 2: 株価 2026-10-14
-73,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 2: 株価 2026-10-14
-74,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 3: 時価総額 2026-10-15
-75,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 3: 時価総額 2026-10-15
-76,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-77,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-78,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 2: 株価 2026-10-14
-79,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 2: 株価 2026-10-14
-80,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 4: 時価総額 2026-10-14
-81,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 4: 時価総額 2026-10-14
-82,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 20: ベータ(Yahoo・S&P500比) 2026-10-15
-83,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 20: ベータ(Yahoo・S&P500比) 2026-10-15
-84,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 2: 株価 2026-10-14
-85,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 2: 株価 2026-10-14
-86,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 4: 時価総額 2026-10-14
-87,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 4: 時価総額 2026-10-14
-88,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 21: BPS 2026/6末
-89,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-90,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
-91,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 国内日用品・スキンケア最大手。棚で直接競合,peers.4452.include
-92,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 目薬（スマイル）でロートと直接競合,peers.4912.include
-93,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 目薬の専業。ただし医療用が中心,peers.4536.include
-94,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア。ただし百貨店・高価格帯中心で業績が低迷中,peers.4911.include
-95,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア。ドラッグストア向けブランドあり,peers.4922.include
-96,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア専業（訪販・直販中心）,peers.4927.include
-97,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: False / 9/25に非公開化の初期提案を公表。株価がTOB期待で動くため倍率の比較から除外（参考表示のみ）,peers.4967.include
-98,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 60 / 赤字・一時的な減益で倍率が極端な会社を外れ値として除外する上限,filters.pe_max
-99,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: None / 10年国債利回り。peers_financials.csv の JGB10Y（財務省、2026-10-14: 3.015%）を優先して使う,capm.risk_free
-100,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / 日本株の市場リスクプレミアムとして一般的な5〜7%の中央を仮置き,capm.market_risk_premium
-101,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: None / ロートのベータ。peers_financials.csv の自己計算値（TOPIX ETF比・週次2年）を優先して使う,capm.beta
-102,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 週次2年のベータは推定誤差が大きいので、修正ベータ 0.67×β+0.33 を使う,capm.blume_adjust
-103,Agent 1 · peers,info,CALENDAR_MISMATCH,12月決算の競合の今期予想PERを、ロートのFY2027/3予想EPSに当てている（期間のずれ約3ヶ月）,
-104,Agent 1 · peers,warning,METHOD_GAP,"方法間の目標株価の差が25%超: [3994, 2785, 2974]",
-105,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.1 / ブランド検索数が前年比+10%なら日本の売上+1%と仮置き。過去データでの検証はまだ,model.elasticity_brand
-106,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / 症状の検索数・UVは需要の環境要因。ブランドより弱いと仮置き,model.elasticity_symptom
-107,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.1 / 日本の売上に占めるインバウンドの割合。会社の開示がないため仮置き（決算説明資料で要確認）,model.inbound_share_of_japan
-108,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.5 / インバウンド購買に占める中国客の割合。仮置き,model.china_weight_in_inbound
-109,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.2 / 売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き,model.incremental_op_margin
-110,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.3 / Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す,confidence.base
-111,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する,confidence.step
-112,Agent 2,warning,FETCH_FAILED,rakuten: HTTPError: HTTP Error 403: Error,rakuten
-113,Agent 2,info,INBOUND_REFERENCE_ONLY,インバウンドは参考表示のみ（前年比 -22.3%）。予想の計算には入れていない,
-114,Agent 2,info,UNVALIDATED_MODEL,弾性値は仮置きで、過去の日本セグメント売上との関係はまだ検証していない（四半期データがたまったら回帰で確認）,
+28,Agent 1,warning,STALE_PRICE,株価が 4 日前のもの。更新すること,
+29,Agent 1,warning,STALE_SNAPSHOT,市場データが 4 日前の取得。fetch_market.py を再実行すること,
+30,Agent 1,info,SOURCE_MISMATCH,"csv 41,118.00 と yfinance 41,122.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2026/3
+31,Agent 1,info,SOURCE_MISMATCH,"csv 38,234.00 と yfinance 38,239.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2025/3
+32,Agent 1,info,SOURCE_MISMATCH,"csv 40,048.00 と yfinance 40,052.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2024/3
+33,Agent 1,info,SOURCE_MISMATCH,"csv 33,959.00 と yfinance 33,964.00 にわずかな差（-0.01%）。yfinance 側の定義の違いか遡及修正",営業利益 FY2023/3
+34,Agent 1,warning,CONSENSUS_GAP,予想EPS 155.8円 vs コンセンサス 162.2円（10人、156.44〜175.59）差 -4.0%。コンセンサスと違う理由を説明できるか確認,FY2027/3
+35,Agent 1,info,CONSENSUS_GAP,予想EPS 166.6円 vs コンセンサス 172.2円（9人、165.07〜194.17）差 -3.2%,FY2028/3
+36,Agent 1,info,MULTIPLE_RANGE,目標PER 18.0倍 / 過去の実績PER 中央値 22.61倍（25〜75%: 18.6〜25.64倍）,
+37,Agent 1,info,ANALYST_TARGET,目標株価 2901円 vs アナリスト平均 3349円（11人）差 -13.4%,
+38,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 2: 株価 2026-10-14
+39,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4452 line 2: 株価 2026-10-14
+40,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後,4452 line 3: 発行済株式数(自己株除く) 2026/6末
+41,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 4: 時価総額 2026-10-14
+42,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後(分割前換算298.42円)。前回予想143.70円,4452 line 8: EPS(基本) FY2026/12予
+43,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 9: 1株配当 FY2026/12予
+44,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後換算:中間78円(分割前)=39円+期末予想39円。会社は年間合計を非開示(分割前換算156円),4452 line 9: 1株配当 FY2026/12予
+45,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後。分割前は260.30円(2025年12月期短信),4452 line 13: EPS(基本) FY2025/12
+46,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: 2026-07-01付1:2株式分割。分割考慮後,4452 line 20: BPS 2026/6末
+47,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4452 line 21: ベータ(Yahoo・S&P500比) 2026-10-15
+48,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4452 line 21: ベータ(Yahoo・S&P500比) 2026-10-15
+49,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 2: 株価 2026-10-14
+50,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4912 line 2: 株価 2026-10-14
+51,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 4: 時価総額 2026-10-14
+52,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 21: BPS 2026/6末
+53,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4912 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+54,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4912 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+55,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4536 line 2: 株価 2026-10-14
+56,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4536 line 2: 株価 2026-10-14
+57,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4536 line 4: 時価総額 2026-10-14
+58,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4536 line 4: 時価総額 2026-10-14
+59,Agent 1 · peers,info,DEFINITION_CHANGE,定義・会計処理の変更あり: IFRSフルベース。コア営業利益は55143百万円(製品に係る無形資産償却費等を除く会社定義),4536 line 6: 営業利益 FY2026/3
+60,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 2: 株価 2026-10-14
+61,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 2: 株価 2026-10-14
+62,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 4: 時価総額 2026-10-14
+63,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 4: 時価総額 2026-10-14
+64,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 5: ベータ(Yahoo・S&P500比) 2026-10-15
+65,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4527 line 5: ベータ(Yahoo・S&P500比) 2026-10-15
+66,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4527 line 6: ベータ 2026-10-14
+67,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 2: 株価 2026-10-14
+68,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 2: 株価 2026-10-14
+69,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 3: 時価総額 2026-10-15
+70,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 3: 時価総額 2026-10-15
+71,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 20: BPS 2026/6末
+72,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4911 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+73,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4911 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+74,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 2: 株価 2026-10-14
+75,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 2: 株価 2026-10-14
+76,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 3: 時価総額 2026-10-15
+77,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 3: 時価総額 2026-10-15
+78,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4922 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+79,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4922 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+80,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 2: 株価 2026-10-14
+81,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 2: 株価 2026-10-14
+82,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 4: 時価総額 2026-10-14
+83,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 4: 時価総額 2026-10-14
+84,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4927 line 20: ベータ(Yahoo・S&P500比) 2026-10-15
+85,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4927 line 20: ベータ(Yahoo・S&P500比) 2026-10-15
+86,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 2: 株価 2026-10-14
+87,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 2: 株価 2026-10-14
+88,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 4: 時価総額 2026-10-14
+89,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 4: 時価総額 2026-10-14
+90,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 21: BPS 2026/6末
+91,Agent 1 · peers,warning,UNRESOLVED,未確認の値（一次資料で要確認）,4967 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+92,Agent 1 · peers,warning,SECONDARY_SOURCE,二次情報が出典,4967 line 22: ベータ(Yahoo・S&P500比) 2026-10-15
+93,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 国内日用品・スキンケア最大手。棚で直接競合,peers.4452.include
+94,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 目薬（スマイル）でロートと直接競合,peers.4912.include
+95,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 目薬の専業。ただし医療用が中心,peers.4536.include
+96,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア。ただし百貨店・高価格帯中心で業績が低迷中,peers.4911.include
+97,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア。ドラッグストア向けブランドあり,peers.4922.include
+98,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / スキンケア専業（訪販・直販中心）,peers.4927.include
+99,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: False / 9/25に非公開化の初期提案を公表。株価がTOB期待で動くため倍率の比較から除外（参考表示のみ）,peers.4967.include
+100,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 60 / 赤字・一時的な減益で倍率が極端な会社を外れ値として除外する上限,filters.pe_max
+101,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: None / 10年国債利回り。peers_financials.csv の JGB10Y（財務省、2026-10-14: 3.015%）を優先して使う,capm.risk_free
+102,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / 日本株の市場リスクプレミアムとして一般的な5〜7%の中央を仮置き,capm.market_risk_premium
+103,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: None / ロートのベータ。peers_financials.csv の自己計算値（TOPIX ETF比・週次2年）を優先して使う,capm.beta
+104,Agent 1 · peers,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: True / 週次2年のベータは推定誤差が大きいので、修正ベータ 0.67×β+0.33 を使う,capm.blume_adjust
+105,Agent 1 · peers,info,CALENDAR_MISMATCH,12月決算の競合の今期予想PERを、ロートのFY2027/3予想EPSに当てている（期間のずれ約3ヶ月）,
+106,Agent 1 · peers,warning,METHOD_GAP,"方法間の目標株価の差が25%超: [3994, 2785, 2974]",
+107,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.1 / ブランド検索数が前年比+10%なら日本の売上+1%と仮置き。過去データでの検証はまだ,model.elasticity_brand
+108,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / 症状の検索数・UVは需要の環境要因。ブランドより弱いと仮置き,model.elasticity_symptom
+109,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.1 / 日本の売上に占めるインバウンドの割合。会社の開示がないため仮置き（決算説明資料で要確認）,model.inbound_share_of_japan
+110,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.5 / インバウンド購買に占める中国客の割合。仮置き,model.china_weight_in_inbound
+111,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.2 / 売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き,model.incremental_op_margin
+112,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.3 / Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す,confidence.base
+113,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する,confidence.step
+114,Agent 2,warning,FETCH_FAILED,rakuten: HTTPError: HTTP Error 403: Error,rakuten
+115,Agent 2,info,INBOUND_REFERENCE_ONLY,インバウンドは参考表示のみ（前年比 -22.3%）。予想の計算には入れていない,
+116,Agent 2,info,UNVALIDATED_MODEL,弾性値は仮置きで、過去の日本セグメント売上との関係はまだ検証していない（四半期データがたまったら回帰で確認）,
+117,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 180 / 2四半期分。直近の決算期の業績予想の修正を少なくとも1回は含める,disclosures.lookback_days
+118,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 売上成長率の差 2%pt。決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,scorecard.revenue_growth_gap
+119,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 営業利益率の差 2%pt,scorecard.op_margin_gap
+120,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 1.0 / 検索シェアの前年同期からの変化（カテゴリ平均）1%pt。Googleトレンドの丸め誤差より大きい変化だけを数える,scorecard.search_share_change_pt
+121,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 2.0 / 棚のフェイスシェアの、最初と最後の訪問の差 2%pt（同じ店・同じカテゴリ）,scorecard.shelf_share_change_pt
+122,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 5.0 / 欠品率の差 5%pt（ロートが競合NBより低ければ +1）,scorecard.stockout_gap_pt
+123,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3 / シラバス Session 5「同じ場所を少なくとも3回」。これ未満の店・カテゴリは点数に入れない,scorecard.min_visits
+124,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 1点あたり競合倍率の ±2%。検証していない仮置き,valuation.premium_per_point
+125,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / 上限 ±6%。公開情報だけで大きな差をつけない,valuation.max_premium
+126,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / Agent 2 と同じ幅（方向がそろえば +0.05、ばらばらなら −0.05）,confidence.step
+127,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3.0 / 差 3%pt。広告販促費の定義の違いと決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,marketing.ap_efficiency_gap_pt
+128,Agent 3,info,CALENDAR_MISMATCH,12月決算の競合は予想の期間がロート（3月決算）と約3か月ずれる。差が小さいときは方向を断定しない,
+129,Agent 3,info,SHARED_WITH_AGENT2,検索シェアは Agent 2 と同じデータ。Agent 3 は倍率の判断にだけ使い、EPS の修正には使わない（二重計上しない）,
+130,Agent 3,warning,DIRECTION_UNKNOWN,ロート製薬 2026-08-06「業績予想の修正に関するお知らせ」の上方・下方が不明。disclosures.csv の direction に up / down / mixed を書く（本人が確認）,1271478
+131,Agent 3,info,COMPETITOR_EVENT,参天製薬 2026-10-16「当社連結子会社の破産手続開始申立てに関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+132,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-10-09「希望退職施策「特別ライフチャレンジ」の結果に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+133,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「連結子会社及び孫会社の吸収合併に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
+134,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「希望退職施策「特別ライフチャレンジ」の実施に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+135,Agent 3,info,COMPETITOR_EVENT,小林製薬 2026-08-06「連結子会社(特定子会社)の異動を伴う持分譲渡に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
+136,Agent 3,info,COMPETITOR_EVENT,資生堂 2026-05-12「台湾資生堂　新竹工場の閉鎖に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+137,Agent 3,warning,INORGANIC_GROWTH,"ロートの買収「Thann Oryza Co., Ltd. の株式取得完了に関するお知らせ」（2026-05-29）：売上成長率と販促の効率の差に買収の分が入っている可能性。既存事業だけの成長率で比べ直すか本人が判断する",1256478
+138,Agent 3,warning,NO_FIELD_DATA,店頭観測データがまだない（field/test_observations.csv）。競合との比較は公開情報だけで、同じ条件での比較になっていない（シラバス 5.4）,
+139,Agent 3,info,NO_AD_SPEND,有報に広告販促費のタグが無い会社（空欄のまま）: 資生堂,
+140,Agent 3,info,DEFINITION_DIFFERENCE,「広告宣伝費」と「販売促進費」の分け方は会社ごとに違う（参天は合計のみ）。合計（広告販促費）で比べる。12月決算の競合は期間が3か月ずれる,
+141,Agent 3,info,EC_SNAPSHOT,楽天のランキングは 2026-10-20 の1回分だけ（10日前、API が 403 で取れていない）。参考表示にとどめ、点数に入れない。価格は商品名から容量・入り数を読んだもの（読めない品目は除外）で、店のセット売り・送料込みの価格が混ざる,
+142,Agent 3,info,UNVALIDATED_MODEL,点数→倍率プレミアムの換算は検証していない仮置き。適用するかは議論と本人が決める,
