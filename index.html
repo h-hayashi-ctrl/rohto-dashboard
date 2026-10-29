@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rohto 4527 Research Dashboard</title>
+<meta name="description" content="Rohto Pharmaceutical (4527): data gathered and results of the two valuation agents, Fukuhara seminar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400&family=Noto+Sans+JP:wght@400;500&display=swap">
+<style>
+/* Layout: one centred column, tabs on top, cards in auto-fit grids */
+:root {
+  --color-bg: #f6f7f9; --color-panel: #ffffff; --color-fg: #17202b; --color-fg-muted: #5b6675; --color-border-line: #dde2e8;
+  --color-ok: #1f7a4a; --color-warn: #a86a00; --color-bad: #b42318;
+  --s0: #1f5fa8; --s1: #d07a26; --s2: #2e8b57; --s3: #c08a00; --s4: #7a5195; --s5: #0f8b8d; --s6: #b5446e; --s7: #6b7280;
+  --cds-chart-grid: #e9ecf1; --cds-chart-axis: #b9c1cc; --cds-chart-reference: #7d8794; --cds-chart-muted: #b8c0cb;
+  --cds-surface-popover: #ffffff; --cds-border: #d3d9e0; --cds-shadow-popover: 0 4px 16px rgba(20, 30, 45, .12); --cds-text-secondary: #5b6675;
+  --cds-radius: 6px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 16px; --cds-pad-xl: 24px;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px; --cds-gap-xl: 32px;
+  --cds-font-size-caption: 12.5px; --cds-font-size-body: 15px; --cds-font-size-heading: 17px; --cds-font-size-title: 30px;
+  --cds-font-weight-medium: 500;
+  --font-anthropic-sans: "IBM Plex Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-anthropic-serif: "IBM Plex Serif", "Noto Sans JP", Georgia, serif;
+  --cds-dur-slow: .3s;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f141a; --color-panel: #161d26; --color-fg: #e6eaf0; --color-fg-muted: #98a3b3; --color-border-line: #283241;
+    --color-ok: #5cc28a; --color-warn: #e3b341; --color-bad: #f07167;
+    --s0: #6ea8ff; --s1: #f0a35e; --s2: #5cc28a; --s3: #e3b341; --s4: #b48ad6; --s5: #4cc3c4; --s6: #e57fa5; --s7: #9aa3b2;
+    --cds-chart-grid: #1f2833; --cds-chart-axis: #3a4656; --cds-chart-reference: #8a95a5; --cds-chart-muted: #4a5668;
+    --cds-surface-popover: #1c2430; --cds-border: #33404f; --cds-shadow-popover: 0 4px 16px rgba(0, 0, 0, .45); --cds-text-secondary: #98a3b3;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); -webkit-font-smoothing: antialiased; }
+#dash-root { max-width: 1200px; margin-inline: auto; padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--s0); }
+.dash-skeleton { color: transparent !important; position: relative; }
+.dash-skeleton::after { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: min(6em, 100%); height: .8em; border-radius: 4px; background: var(--color-border-line); }
+.rx-chart.dash-skeleton::after, .rx-mult.dash-skeleton::after { inset: 0; top: 0; transform: none; width: 100%; height: 100%; opacity: .5; }
+@media (prefers-reduced-motion: no-preference) { .dash-skeleton::after { animation: rx-pulse 1.2s ease-in-out infinite alternate; } }
+@keyframes rx-pulse { from { opacity: .35; } to { opacity: .8; } }
+.rx-foot { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; flex-direction: column; gap: 8px; line-height: 1.5; }
+.rx-foot ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+// Minimal stand-in for the dashboard runtime: loads the CSVs in data/ and
+// runs each registered drawing when data arrives, the width changes or a tab opens.
+window.dash = (() => {
+  const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
+    'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory'];
+  const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
+  const calcs = {};
+  const draws = new Map();
+
+  const calcResult = (id) => {
+    const c = calcs[id];
+    const ins = c.inputs.map(data);
+    if (ins.some((d) => d.status !== 'ok')) return { status: ins.some((d) => d.status === 'error') ? 'error' : 'loading', data: [] };
+    if (!c.cache) {
+      try { c.cache = { status: 'ok', data: c.fn(...ins.map((d) => d.data)) }; } catch (e) { console.error(id, e); c.cache = { status: 'error', data: [] }; }
+    }
+    return c.cache;
+  };
+  function data(id) {
+    if (calcs[id]) return calcResult(id);
+    return store[id] || { status: 'missing', data: [] };
+  }
+  const run = (name) => {
+    const fn = draws.get(name);
+    document.querySelectorAll(`[data-draw="${name}"]`).forEach((el) => {
+      if (el.closest('[hidden]')) return;
+      try { fn(el); } catch (e) { console.error(name, e); }
+    });
+  };
+  const runAll = () => { for (const n of draws.keys()) run(n); };
+  let timer;
+  const later = () => { clearTimeout(timer); timer = setTimeout(runAll, 120); };
+
+  Promise.all(SOURCES.map((id) => d3.text(`data/${id}.csv`)
+    .then((t) => { const rows = d3.csvParse(t); store[id] = { status: 'ok', data: rows, columns: rows.columns }; })
+    .catch((e) => { store[id] = { status: 'error', data: [], message: String(e) }; })))
+    .then(() => { Object.values(calcs).forEach((c) => { c.cache = null; }); runAll(); });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    runAll();
+    const root = document.getElementById('dash-root');
+    let w = root.clientWidth;
+    new ResizeObserver(() => { if (Math.abs(root.clientWidth - w) > 4) { w = root.clientWidth; later(); } }).observe(root);
+    new MutationObserver(runAll).observe(root, { attributes: true, attributeFilter: ['hidden'], subtree: true });
+  });
+
+  return {
+    data,
+    draw: (name, fn) => { if (fn) draws.set(name, fn); else run(name); },
+    calc: (id, o) => { calcs[id] = { ...o }; },
+    colors: Array.from({ length: 8 }, (_, i) => `var(--s${i})`),
+    setLink: (name) => history.replaceState(null, '', '#' + name),
+  };
+})();
+</script>
+</head>
+<body>
+<main id="dash-root">
+<style>
+.rx { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); }
+.rx-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.rx-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.rx-take { margin: 0; font-size: var(--cds-font-size-body); max-width: 70ch; line-height: 1.55; }
+.rx .rx-take b, .rx .rx-note b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.rx-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); }
+.rx-tab { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; margin-bottom: -1px; }
+.rx-tab:hover { color: var(--color-fg); }
+.rx-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.rx-tab:focus-visible, .rx-seg button:focus-visible, .rx input:focus-visible, .rx select:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.rx-page { display: flex; flex-direction: column; gap: var(--cds-gap-xl); }
+.rx-h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.rx-sec { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.rx-sec > p { margin: 0; color: var(--color-fg-muted); max-width: 75ch; line-height: 1.5; }
+.rx-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-md); }
+.rx-tile { display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding: var(--cds-pad-md) var(--cds-pad-lg); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); min-width: 0; }
+.rx-tile-l { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rx-tile-v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.rx-tile-s { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.rx-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.rx-card { display: flex; flex-direction: column; gap: var(--cds-gap-sm); background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.rx-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.rx-card > p, .rx-note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.rx-chart { position: relative; min-height: 220px; }
+.rx-chart.rx-sm { min-height: 120px; }
+.rx-chart svg { display: block; overflow: visible; }
+.rx-tick { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.rx-lab { font-size: var(--cds-font-size-caption); fill: var(--color-fg); font-variant-numeric: tabular-nums; }
+.rx-gl { stroke: var(--cds-chart-grid); stroke-width: 1; }
+.rx-ax { stroke: var(--cds-chart-axis); stroke-width: 1; }
+.rx-ref { stroke: var(--cds-chart-reference); stroke-width: 1; stroke-dasharray: 4 3; }
+.rx-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); display: flex; flex-direction: column; gap: 2px; min-width: 9rem; }
+.rx-tip-h { color: var(--cds-text-secondary); }
+.rx-tip-r { display: flex; align-items: center; gap: 6px; }
+.rx-tip-v { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.rx-sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; flex: none; background: var(--cds-chart-muted); }
+.rx-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rx-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.rx-fail { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: inherit; height: 100%; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.rx-dot { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.rx-up { color: var(--color-ok); }
+.rx-down { color: var(--color-bad); }
+.rx-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); counter-reset: none; }
+.rx-step { position: relative; display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); min-width: 0; }
+.rx-step h4 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.rx-step p, .rx-step ul { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.rx-step ul { padding-left: 1.1em; }
+.rx-step-k { font-size: var(--cds-font-size-caption); letter-spacing: .06em; text-transform: uppercase; color: var(--color-fg-muted); }
+.rx-mult { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); min-height: 160px; }
+.rx-mini { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rx-mini-h { display: flex; justify-content: space-between; gap: 8px; font-size: var(--cds-font-size-caption); }
+.rx-mini-h span:first-child { font-weight: var(--cds-font-weight-medium); }
+.rx-mini-h span:last-child { font-variant-numeric: tabular-nums; }
+.rx-seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); overflow: hidden; align-self: flex-start; }
+.rx-seg button { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-md); background: none; border: 0; color: var(--color-fg-muted); cursor: pointer; }
+.rx-seg button[aria-pressed="true"] { background: var(--color-border-line); color: var(--color-fg); }
+.rx-tablebox { overflow: auto; max-height: 28rem; }
+.rx-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.rx-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.rx-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.rx-table .n { text-align: right; }
+.rx-table tr.rx-self td { font-weight: 600; }
+.rx-table tr.rx-off td { color: var(--color-fg-muted); }
+.rx-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; font-size: var(--cds-font-size-caption); white-space: nowrap; }
+.rx-pill.warning { color: var(--color-warn); }
+.rx-pill.info { color: var(--color-fg-muted); }
+.rx-pill.error, .rx-pill.bad { color: var(--color-bad); }
+.rx-pill.ok { color: var(--color-ok); }
+.rx-tools { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+.rx-tools input, .rx-tools select { font: inherit; font-size: var(--cds-font-size-caption); padding: 4px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); }
+.rx-tools input { flex: 1 1 12rem; min-width: 0; }
+.rx-chain { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: var(--cds-gap-sm); }
+.rx-chain > div { display: flex; flex-direction: column; gap: 2px; padding: var(--cds-pad-sm) var(--cds-pad-md); border-left: 2px solid var(--color-border-line); }
+.rx-chain .rx-tile-v { font-size: var(--cds-font-size-heading); }
+.rx-rounds { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: var(--cds-gap-md); }
+.rx-rounds h4 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.rx-rounds p { margin: 0; font-size: var(--cds-font-size-caption); line-height: 1.55; color: var(--color-fg-muted); }
+.rx-quote { margin: 0; padding: var(--cds-pad-md) var(--cds-pad-lg); border-left: 3px solid var(--color-fg); font-size: var(--cds-font-size-body); line-height: 1.55; max-width: 75ch; }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="rx">
+  <header class="rx-head">
+    <h1 class="rx-title" id="top">Rohto Pharmaceutical (4527) · research dashboard</h1>
+    <p class="rx-take">Agent 1 sets a 12-month target of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent1_target" data-fmt="yen">—</b>, <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=upside" data-fmt="spct">—</b> above the <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=price" data-fmt="yen">—</b> close on <b data-draw="fact" data-source="facts" data-field="as_of" data-where="section=headline&amp;metric=price" data-fmt="text">—</b>. With confidence at <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=confidence" data-fmt="n2">—</b>, the alpha of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=alpha" data-fmt="spct">—</b> shrinks to <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=adjusted_alpha" data-fmt="spct2">—</b>, so the active view is <b data-draw="fact" data-source="facts" data-field="text" data-where="section=headline&amp;metric=direction" data-fmt="text">—</b>.</p>
+  </header>
+
+  <nav class="rx-tabs" role="tablist" aria-label="Dashboard pages">
+    <button class="rx-tab" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+    <button class="rx-tab" role="tab" data-tab="agent1" aria-selected="false">Agent 1 · Fundamentals</button>
+    <button class="rx-tab" role="tab" data-tab="agent2" aria-selected="false">Agent 2 · Alternative data</button>
+    <button class="rx-tab" role="tab" data-tab="debate" aria-selected="false">Debate</button>
+    <button class="rx-tab" role="tab" data-tab="data-checks" aria-selected="false">Data &amp; checks</button>
+  </nav>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section class="rx-page" id="overview" role="tabpanel">
+    <div class="rx-tiles">
+      <div class="rx-tile"><span class="rx-tile-l">Share price</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=price" data-fmt="yen">—</span><span class="rx-tile-s">Close, yfinance</span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Agent 1 target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent1_target" data-fmt="yen">—</span><span class="rx-tile-s"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=upside" data-fmt="spct" data-tone="sign">—</span> vs price</span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Agent 2 adjusted target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=agent2_target" data-fmt="yen">—</span><span class="rx-tile-s">If its signals were applied</span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Debate final target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=debate_target" data-fmt="yen">—</span><span class="rx-tile-s">Run on <span data-draw="fact" data-source="facts" data-field="text" data-where="section=debate&amp;metric=run_at" data-fmt="text">—</span></span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Analyst mean target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=analyst_target" data-fmt="yen">—</span><span class="rx-tile-s">For reference only</span></div>
+      <div class="rx-tile"><span class="rx-tile-l">Adjusted alpha</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=adjusted_alpha" data-fmt="spct2">—</span><span class="rx-tile-s">View: <span data-draw="fact" data-source="facts" data-field="text" data-where="section=headline&amp;metric=direction" data-fmt="text">—</span></span></div>
+    </div>
+
+    <div class="rx-grid">
+      <div class="rx-card" id="targets-card">
+        <h3>Target price by method</h3>
+        <p>Every valuation the agents produced, against today's price (dashed line). Agent 1 blends its own-multiple and peer-multiple results, with peers weighted at <b data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=peer_weight" data-fmt="pct0">—</b>.</p>
+        <div class="rx-chart" data-draw="targets-chart" data-source="targets facts"></div>
+      </div>
+      <div class="rx-card">
+        <h3>Expected return and alpha</h3>
+        <p>Expected return = target ÷ price − 1 + dividend yield. Alpha is measured against the class benchmark, then scaled by confidence.</p>
+        <div class="rx-chain">
+          <div><span class="rx-tile-l">Expected return</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=expected_return" data-fmt="pct">—</span></div>
+          <div><span class="rx-tile-l">Benchmark</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=benchmark_return" data-fmt="pct">—</span></div>
+          <div><span class="rx-tile-l">Alpha</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=alpha" data-fmt="spct">—</span></div>
+          <div><span class="rx-tile-l">× Confidence</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=confidence" data-fmt="n2">—</span></div>
+          <div><span class="rx-tile-l">= Adjusted alpha</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=adjusted_alpha" data-fmt="spct2">—</span></div>
+        </div>
+        <p class="rx-note">The rule: adjusted alpha above <b data-draw="threshold" data-sign="+">—</b> is overweight, below <b data-draw="threshold" data-sign="-">—</b> is underweight, anything between is neutral.</p>
+      </div>
+    </div>
+
+    <section class="rx-sec" id="how-it-works">
+      <h2 class="rx-h2">How the agents work</h2>
+      <p>The agents extract, calculate and flag problems. Final judgement on every assumption stays with me, and each value records who decided it (company disclosure, agent placeholder or student).</p>
+      <div class="rx-flow">
+        <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data gathered</h4><ul><li>Earnings releases (tanshin) and EDINET filings</li><li>yfinance prices, consensus, analyst targets</li><li>Financials of listed peers</li><li>Google Trends, JNTO, UV index, Rakuten</li></ul></div>
+        <div class="rx-step"><span class="rx-step-k">Agent 1</span><h4>Fundamentals</h4><p>Checks the data, forecasts FY2027/3–FY2028/3, values Rohto on its own multiples and on peer multiples, then blends the two into a target price.</p></div>
+        <div class="rx-step"><span class="rx-step-k">Agent 2</span><h4>Alternative data</h4><p>Turns this year's search, weather and tourism signals into a change in Japan revenue, EPS and target price, and suggests raising or lowering confidence. It does not set its own target.</p></div>
+        <div class="rx-step"><span class="rx-step-k">Debate</span><h4>Moderator</h4><p>The two agents argue in rounds. A moderator weighs them and sets the final target price and confidence.</p></div>
+        <div class="rx-step"><span class="rx-step-k">Output</span><h4>Active view</h4><p>Target, expected return, confidence-adjusted alpha and direction go to the seminar dashboard. A systemd timer reruns both agents every week.</p></div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== AGENT 1 ===================== -->
+  <section class="rx-page" id="agent1" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">Growth and profitability</h2>
+      <p>Revenue grew <b data-draw="fact" data-source="facts" data-field="value" data-where="section=valuation&amp;metric=revenue_cagr" data-fmt="pct">—</b> a year over <span data-draw="fact" data-source="facts" data-field="text" data-where="section=valuation&amp;metric=revenue_cagr" data-fmt="text">—</span>, helped by Asia and acquisitions, while the operating margin slipped. Profit in the Japan segment fell two years running, which is why demand at Japanese drugstores is the question the field survey targets.</p>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Revenue and operating margin, FY2020/3–FY2028/3</h3>
+          <p>Bars: revenue (¥bn). Line: operating margin. The last two years are Agent 1's forecast, starting from company guidance.</p>
+          <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>Revenue, actual</span><span><i class="rx-sw" data-sw="0" style="opacity:.35"></i>Revenue, forecast</span><span><i class="rx-sw" data-sw="1"></i>Operating margin</span></div>
+          <div class="rx-chart" data-draw="fin-chart" data-source="financials"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Segment profit: Japan vs Asia</h3>
+          <p>¥ million, from the regional segment notes. Asia is closing the gap.</p>
+          <div class="rx-chart" data-draw="seg-chart" data-source="financials"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Forecast vs the market</h2>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>EPS forecast vs analyst consensus</h3>
+          <p>My EPS sits below the consensus mean and, for FY2027/3, just under the lowest analyst. I don't raise it on unverified proxies.</p>
+          <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>My forecast</span><span><i class="rx-sw" data-sw="1"></i>Consensus mean</span><span><i class="rx-sw"></i>Analyst range</span></div>
+          <div class="rx-chart rx-sm" data-draw="eps-chart" data-source="consensus"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Target P/E against Rohto's own history</h3>
+          <p>Monthly P/E on EPS known at the time, <span data-draw="fact" data-source="facts" data-field="text" data-where="section=pe_band&amp;metric=from" data-fmt="text">—</span> to <span data-draw="fact" data-source="facts" data-field="text" data-where="section=pe_band&amp;metric=to" data-fmt="text">—</span>. The box spans the middle half. A target of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=pe_band&amp;metric=target_pe" data-fmt="x">—</b> sits below the median of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=pe_band&amp;metric=median" data-fmt="x">—</b>.</p>
+          <div class="rx-chart rx-sm" data-draw="pe-band" data-source="facts"></div>
+        </div>
+      </div>
+      <div class="rx-card">
+        <h3>Share price, monthly close</h3>
+        <p>With Agent 1's target and the analyst mean target for reference.</p>
+        <div class="rx-chart" data-draw="price-chart" data-source="price_monthly facts"></div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Peer comparison</h2>
+      <p>Japanese consumer-health and cosmetics peers. Kobayashi is excluded from the averages because a take-private offer is driving its price. Most peers close their books in December, so their forecast years end a quarter earlier of Rohto's.</p>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Forward ROE vs P/B</h3>
+          <p>Fitted on the six included peers: P/B = <b data-draw="fact" data-source="peer_fit" data-field="intercept" data-where="fit=ols" data-fmt="n2">—</b> + <b data-draw="fact" data-source="peer_fit" data-field="slope" data-where="fit=ols" data-fmt="n2">—</b> × ROE, R² = <b data-draw="fact" data-source="peer_fit" data-field="r2" data-where="fit=ols" data-fmt="n2">—</b>. The weak fit is one reason the peer valuation only gets half the weight.</p>
+          <div class="rx-chart" data-draw="peer-scatter" data-source="peers peer_fit"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Valuation multiples</h3>
+          <p>Forward figures. Rohto in bold, excluded peer greyed.</p>
+          <div class="rx-tablebox">
+            <table class="rx-table" data-source="peers" data-row-key="ticker">
+              <thead><tr><th data-field="ticker">Code</th><th data-field="name_en">Company</th><th class="n" data-field="pe_forward">P/E</th><th class="n" data-field="ev_ebitda_forward">EV/EBITDA</th><th class="n" data-field="pbr">P/B</th><th class="n" data-field="roe_forward">ROE</th><th class="n" data-field="op_margin_forward">Op. margin</th><th class="n" data-field="dividend_yield">Yield</th></tr></thead>
+              <tbody data-draw="peers-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== AGENT 2 ===================== -->
+  <section class="rx-page" id="agent2" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">From signals to the target price</h2>
+      <p>Agent 2 compares this fiscal year so far (April onward) with the same months last year. Brand searches feed Japan revenue at an elasticity of <b data-draw="fact" data-source="assumptions" data-field="value" data-where="agent=Agent 2&amp;field=model.elasticity_brand" data-fmt="n2">—</b>, symptoms and weather at <b data-draw="fact" data-source="assumptions" data-field="value" data-where="agent=Agent 2&amp;field=model.elasticity_symptom" data-fmt="n2">—</b>. Inbound tourism is shown for reference only, because Rohto does not disclose its inbound share.</p>
+      <div class="rx-card">
+        <h3>How the signals move the forecast</h3>
+        <div class="rx-chain">
+          <div><span class="rx-tile-l">Brand searches, YoY</span><span class="rx-tile-v" data-draw="fact" data-source="alt_groups" data-field="yoy" data-where="group=brand" data-fmt="spct" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">Symptoms &amp; UV, YoY</span><span class="rx-tile-v" data-draw="fact" data-source="alt_groups" data-field="yoy" data-where="group=symptom" data-fmt="spct" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">Japan growth change</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_impact&amp;metric=japan_growth_adjustment" data-fmt="spct2" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">Revenue change</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_impact&amp;metric=revenue_adjustment" data-fmt="smn" data-tone="sign">—</span></div>
+          <div><span class="rx-tile-l">FY2027/3 EPS</span><span class="rx-tile-v"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_impact&amp;metric=eps_before" data-fmt="yen2">—</span> → <span data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_impact&amp;metric=eps_after" data-fmt="yen2">—</span></span></div>
+          <div><span class="rx-tile-l">Target price change</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_impact&amp;metric=target_price_impact" data-fmt="syen" data-tone="sign">—</span></div>
+        </div>
+        <p class="rx-note">Confidence: Agent 2 suggests <b data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_confidence&amp;metric=suggested" data-fmt="n2">—</b>, a change of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_confidence&amp;metric=change" data-fmt="sn2">—</b> from the base of <b data-draw="fact" data-source="facts" data-field="value" data-where="section=alt_confidence&amp;metric=base" data-fmt="n2">—</b>, because the signals point in different directions. Inbound visitors, which are not used, changed <b data-draw="fact" data-source="alt_groups" data-field="yoy" data-where="group=inbound" data-fmt="spct" data-tone="sign">—</b>.</p>
+      </div>
+      <div class="rx-card">
+        <h3>Every signal, year on year</h3>
+        <p>This fiscal year to date vs the same months last year. Grey bars are inbound tourism, shown for reference and left out of the forecast.</p>
+        <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>Brand search</span><span><i class="rx-sw" data-sw="1"></i>Symptoms &amp; weather</span><span><i class="rx-sw"></i>Inbound (reference)</span></div>
+        <div class="rx-chart" data-draw="yoy-chart" data-source="alt_signals"></div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Google Trends search interest</h2>
+      <p>Monthly average of weekly Google Trends scores in Japan (0–100, each term scaled to its own peak). Shaded: April 2026 onward, the window Agent 2 compares.</p>
+      <div class="rx-seg" role="group" aria-label="Search terms">
+        <button type="button" data-tgroup="brand" aria-pressed="true">Rohto brands</button>
+        <button type="button" data-tgroup="symptom" aria-pressed="false">Symptoms</button>
+      </div>
+      <div class="rx-mult" data-draw="trend-mult" data-source="trends_monthly alt_signals"></div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Share of search within each category</h2>
+      <p>Rohto's brand as a share of searches for the four leading brands in each category. Eye drops gained the most this year.</p>
+      <div class="rx-mult" data-draw="share-mult" data-source="share_monthly"></div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Tourism, weather and online sales</h2>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Visitors to Japan, monthly</h3>
+          <p>JNTO. Visitors from China are down <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=訪日客数（中国）" data-fmt="spct" data-tone="sign">—</b> this fiscal year while all others are up <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=訪日客数（中国以外）" data-fmt="spct" data-tone="sign">—</b>.</p>
+          <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>All visitors</span><span><i class="rx-sw" data-sw="1"></i>China</span></div>
+          <div class="rx-chart" data-draw="jnto-chart" data-source="jnto"></div>
+        </div>
+        <div class="rx-card">
+          <h3>UV index, Tokyo</h3>
+          <p>Monthly mean of the daily maximum (Open-Meteo). It drives sunscreen and whitening demand. Down <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=UV指数（東京・月平均）" data-fmt="spct" data-tone="sign">—</b> this fiscal year.</p>
+          <div class="rx-chart" data-draw="uv-chart" data-source="uv"></div>
+        </div>
+      </div>
+      <div class="rx-card">
+        <h3>Rakuten bestseller ranking, top 30</h3>
+        <p>Rohto items in the latest snapshot. Eye drops: <b data-draw="fact" data-source="rakuten_summary" data-field="rohto" data-where="genre_en=Eye drops" data-fmt="int">—</b> of the top 30, best rank <b data-draw="fact" data-source="rakuten_summary" data-field="best_rank" data-where="genre_en=Eye drops" data-fmt="int">—</b>. Lotion: <b data-draw="fact" data-source="rakuten_summary" data-field="rohto" data-where="genre_en=Lotion" data-fmt="int">—</b>, best rank <b data-draw="fact" data-source="rakuten_summary" data-field="best_rank" data-where="genre_en=Lotion" data-fmt="int">—</b>. The most recent weekly fetch was blocked (HTTP 403), so this is the Oct 20 snapshot.</p>
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="rakuten" data-row-key="genre,rank">
+            <thead><tr><th data-field="genre_en">Category</th><th class="n" data-field="rank">Rank</th><th data-field="item_name">Listing</th><th class="n" data-field="price">Price</th></tr></thead>
+            <tbody data-draw="rakuten-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== DEBATE ===================== -->
+  <section class="rx-page" id="debate" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">Agent 1 vs Agent 2</h2>
+      <p>The debate ran on <span data-draw="fact" data-source="facts" data-field="text" data-where="section=debate&amp;metric=run_at" data-fmt="text">—</span> with the price at <b data-draw="fact" data-source="facts" data-field="value" data-where="section=debate&amp;metric=price" data-fmt="yen">—</b>. At that time Agent 2 still counted inbound tourism; it now shows it for reference only, so its current adjustment differs from the debate.</p>
+      <div class="rx-tiles">
+        <div class="rx-tile"><span class="rx-tile-l">Final target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=debate_target" data-fmt="yen">—</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Weight on Agent 1</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=debate&amp;metric=weight_agent1" data-fmt="pct0">—</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Confidence</span><span class="rx-tile-v"><span data-draw="fact" data-source="facts" data-field="value" data-where="section=debate&amp;metric=confidence_before" data-fmt="n2">—</span> → <span data-draw="fact" data-source="facts" data-field="value" data-where="section=debate&amp;metric=confidence_final" data-fmt="n2">—</span></span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Expected return</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=debate&amp;metric=expected_return" data-fmt="pct">—</span><span class="rx-tile-s">View: <span data-draw="fact" data-source="facts" data-field="text" data-where="section=debate&amp;metric=direction" data-fmt="text">—</span></span></div>
+      </div>
+      <div class="rx-card">
+        <h3>Target price through the debate</h3>
+        <p>Neither agent moved its number. The moderator weighted Agent 1 more heavily and cut confidence.</p>
+        <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>Agent 1</span><span><i class="rx-sw" data-sw="1"></i>Agent 2</span><span><i class="rx-sw" data-sw="2"></i>Moderator</span></div>
+        <div class="rx-chart" data-draw="debate-chart" data-source="debate facts"></div>
+      </div>
+      <blockquote class="rx-quote">Moderator: the alternative data splits. Brand searches came in strong but Chinese visitors fell, the two roughly cancel, and nothing confirms the forecast. So Agent 1's target stays almost unchanged and confidence comes down.</blockquote>
+    </section>
+    <section class="rx-sec">
+      <h2 class="rx-h2">The arguments, round by round</h2>
+      <div class="rx-rounds">
+        <div class="rx-card"><h4>Round 1 · Agent 1</h4><p>Own multiples put Rohto close to the current price. Peer multiples point higher but are pulled up by low-profit, high-P/E cosmetics names, and the ROE–P/B fit is weak, so peers get only half the weight. EPS is already below consensus, so no upgrade on unverified proxies.</p></div>
+        <div class="rx-card"><h4>Round 1 · Agent 2</h4><p>Brand searches are strong, led by Rohto eye drops and Hada Labo, but Chinese visitors fell sharply and the inbound proxy cancels the gain. The net effect is a small cut to Japan growth, EPS and the target. The signals disagree, so confidence should come down.</p></div>
+        <div class="rx-card"><h4>Round 2 · Agent 1 rebuts</h4><p>Agrees confidence should fall, but every elasticity and share is a placeholder. The suggested cut is smaller than the error in those assumptions, and the data windows don't line up. Keeps its target.</p></div>
+        <div class="rx-card"><h4>Round 2 · Agent 2 rebuts</h4><p>Being below consensus is not evidence about this year's demand. A zero adjustment is a placeholder too, and accepting the brand upside while ignoring the China downside is asymmetric. Keeps the small cut and asks for the inbound share to be checked in company materials.</p></div>
+        <div class="rx-card"><h4>Round 3 · Final positions</h4><p>Agent 1 holds its target, conceding the asymmetry point but not the cut. Agent 2 holds its small cut. Both agree the inbound share is the biggest unknown. After this debate I moved inbound to reference-only until it can be verified.</p></div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ===================== DATA & CHECKS ===================== -->
+  <section class="rx-page" id="data-checks" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">Data gathered</h2>
+      <p>Every source the agents read, how much of it there is, and when it was last refreshed. Primary sources (filings) come first; yfinance is only used to cross-check.</p>
+      <div class="rx-card">
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="inventory" data-row-key="dataset">
+            <thead><tr><th data-field="dataset">Dataset</th><th data-field="source">Source</th><th class="n" data-field="rows">Rows</th><th data-field="coverage">Coverage</th><th data-field="used_by">Used by</th><th data-field="updated">Updated</th><th data-field="status">Status</th></tr></thead>
+            <tbody data-draw="inv-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Who decided each assumption</h2>
+      <p>Each input carries its source: a company disclosure, a placeholder the agent set, or a decision I made. Placeholders are flagged until I confirm them.</p>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Inputs by who decided them</h3>
+          <div class="rx-chart rx-sm" data-draw="asm-chart" data-source="assumption_summary"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Checks raised by each agent</h3>
+          <p>Warnings need a decision or a primary-source check. Info notes are definition changes and cross-check results.</p>
+          <div class="rx-legend"><span><i class="rx-sw" data-sw="3"></i>Warning</span><span><i class="rx-sw"></i>Info</span></div>
+          <div class="rx-chart rx-sm" data-draw="warn-chart" data-source="warning_summary"></div>
+        </div>
+      </div>
+      <div class="rx-card">
+        <h3>Assumptions</h3>
+        <p>Reasons are as recorded in the assumption files (Japanese).</p>
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="assumptions" data-row-key="agent,field">
+            <thead><tr><th data-field="agent">Agent</th><th data-field="field">Field</th><th class="n" data-field="value">Value</th><th data-field="decided_by">Decided by</th><th data-field="reason">Reason</th></tr></thead>
+            <tbody data-draw="asm-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Warnings log</h2>
+      <p>Messages are as the agents wrote them (Japanese).</p>
+      <div class="rx-card">
+        <div class="rx-tools">
+          <input id="warn-q" type="search" placeholder="Search messages, codes or references" aria-label="Search warnings">
+          <select id="warn-level" aria-label="Level"><option value="">All levels</option><option value="warning">Warnings</option><option value="info">Info</option></select>
+          <select id="warn-agent" aria-label="Agent"><option value="">All agents</option><option value="Agent 1">Agent 1</option><option value="Agent 1 · peers">Agent 1 · peers</option><option value="Agent 2">Agent 2</option></select>
+        </div>
+        <div class="rx-tablebox">
+          <table class="rx-table" data-source="warnings" data-row-key="id">
+            <thead><tr><th class="n" data-field="id">#</th><th data-field="agent">Agent</th><th data-field="level">Level</th><th data-field="code">Code</th><th data-field="message">Message</th><th data-field="ref">Reference</th></tr></thead>
+            <tbody data-draw="warn-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </section>
+</div>
+
+<script>
+// Shared helpers
+window.R = (() => {
+  const BAD = ['error', 'declined', 'connect', 'missing'];
+  const st = (id) => dash.data(id).status;
+  const rows = (id) => (st(id) === 'ok' ? dash.data(id).data : []);
+  const num = (v) => (v === '' || v == null || isNaN(+v) ? null : +v);
+  const sign = (v) => (v > 0 ? '+' : v < 0 ? '−' : '');
+  const F = {
+    text: (v) => String(v),
+    yen: (v) => '¥' + d3.format(',.0f')(v),
+    yen2: (v) => '¥' + d3.format(',.2f')(v),
+    syen: (v) => sign(v) + '¥' + d3.format(',.0f')(Math.abs(v)),
+    smn: (v) => sign(v) + '¥' + d3.format(',.0f')(Math.abs(v)) + 'm',
+    int: d3.format(',.0f'),
+    pct: d3.format('.1%'),
+    pct0: d3.format('.0%'),
+    spct: (v) => sign(v) + d3.format('.1%')(Math.abs(v)),
+    spct2: (v) => sign(v) + d3.format('.2%')(Math.abs(v)),
+    x: (v) => d3.format('.1f')(v) + '×',
+    n2: d3.format('.2f'),
+    sn2: (v) => sign(v) + d3.format('.2f')(Math.abs(v)),
+  };
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  // Returns true (and draws the empty / failed state) when any source isn't ready.
+  const wait = (node, ids, isChart = true) => {
+    const s = ids.map(st);
+    if (s.every((x) => x === 'ok')) { node.classList.remove('dash-skeleton'); return false; }
+    node.replaceChildren();
+    if (s.some((x) => BAD.includes(x))) {
+      node.classList.remove('dash-skeleton');
+      if (node.tagName !== 'TBODY') {
+        if (isChart) { const f = el('div', 'rx-fail'); f.append(el('span', 'rx-dot'), 'Failed to load'); node.append(f); }
+        else node.textContent = '—';
+      }
+    } else {
+      if (node.tagName !== 'TBODY') node.classList.add('dash-skeleton');
+      if (!isChart) node.textContent = '—';
+    }
+    return true;
+  };
+  const tip = (box) => {
+    const t = el('div', 'rx-tip'); t.hidden = true; box.append(t);
+    return {
+      show(x, y, title, lines) {
+        t.replaceChildren(el('div', 'rx-tip-h', title));
+        for (const l of lines) {
+          const r = el('div', 'rx-tip-r');
+          if (l.color) { const s = el('span', 'rx-sw'); s.style.background = l.color; r.append(s); }
+          r.append(el('span', null, l.name), el('span', 'rx-tip-v', l.value));
+          t.append(r);
+        }
+        t.hidden = false;
+        const W = box.clientWidth, w = t.offsetWidth, h = t.offsetHeight;
+        let L = x + 14; if (L + w > W) L = x - 14 - w; if (L < 0) L = Math.max(0, W - w);
+        t.style.left = L + 'px'; t.style.top = Math.max(0, y - h - 6) + 'px';
+      },
+      hide() { t.hidden = true; },
+    };
+  };
+  const svg = (box, h) => {
+    const w = Math.max(260, box.clientWidth || 600);
+    const s = d3.select(box).append('svg').attr('width', '100%').attr('height', h).attr('viewBox', `0 0 ${w} ${h}`);
+    return { s, w, h };
+  };
+  const textW = (s, texts, cls = 'rx-tick') => {
+    const g = s.append('g'); let m = 0;
+    for (const t of texts) m = Math.max(m, g.append('text').attr('class', cls).text(t).node().getComputedTextLength());
+    g.remove(); return m;
+  };
+  let gid = 0;
+  const C = (i) => dash.colors[i % dash.colors.length];
+  // Spread end labels so they don't collide.
+  const spread = (items, gap, lo, hi) => {
+    items.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < items.length; i++) if (items[i].y - items[i - 1].y < gap) items[i].y = items[i - 1].y + gap;
+    const over = items.length ? items[items.length - 1].y - hi : 0;
+    if (over > 0) for (const it of items) it.y -= over;
+    for (let i = items.length - 2; i >= 0; i--) if (items[i + 1].y - items[i].y < gap) items[i].y = items[i + 1].y - gap;
+    for (const it of items) it.y = Math.max(lo, it.y);
+    return items;
+  };
+
+  // Multi-series line chart over time.
+  const lines = (box, o) => {
+    const H = o.h || 240, small = H < 160;
+    const { s, w } = svg(box, H);
+    const pts = o.series.flatMap((d) => d.points);
+    if (!pts.length) return;
+    const yVals = [...pts.map((p) => p.y), ...(o.refs || []).map((r) => r.y)];
+    const y = d3.scaleLinear(o.yDomain || [o.zero ? 0 : d3.min(yVals), d3.max(yVals)], [H - 22, 8]).nice(small ? 3 : 5);
+    const ticks = y.ticks(small ? 3 : 5);
+    const ml = textW(s, ticks.map(o.yFmt)) + 8;
+    const ends = o.endLabels ? o.series.map((d) => d.name + ' ' + o.yFmt(d.points[d.points.length - 1].y)) : [];
+    const refW = (o.refs || []).length ? textW(s, o.refs.map((r) => r.label + ' ' + o.yFmt(r.y))) : 0;
+    const mr = Math.max(o.endLabels ? textW(s, ends) + 10 : 6, 6);
+    const x = d3.scaleUtc(d3.extent(pts, (p) => p.x), [ml, w - mr]);
+    if (o.shadeFrom) s.append('rect').attr('x', x(o.shadeFrom)).attr('y', 8).attr('width', Math.max(0, w - mr - x(o.shadeFrom))).attr('height', H - 30).attr('fill', 'var(--cds-chart-grid)').attr('opacity', 0.6);
+    s.append('g').selectAll('line').data(ticks).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - mr).attr('y1', y).attr('y2', y);
+    s.append('g').selectAll('text').data(ticks).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').text(o.yFmt);
+    const xt = x.ticks(Math.max(2, Math.floor((w - ml - mr) / (small ? 70 : 90))));
+    s.append('g').selectAll('text').data(xt).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text(o.xFmt || d3.utcFormat('%Y'));
+    for (const r of o.refs || []) {
+      s.append('line').attr('class', 'rx-ref').attr('x1', ml).attr('x2', w - mr).attr('y1', y(r.y)).attr('y2', y(r.y));
+      s.append('text').attr('class', 'rx-tick').attr('x', ml + 4).attr('y', y(r.y) - 4).text(r.label + ' ' + o.yFmt(r.y));
+    }
+    void refW;
+    if (o.area) {
+      const id = 'rxg' + ++gid, c = o.series[0].color;
+      const g = s.append('defs').append('linearGradient').attr('id', id).attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 1);
+      [[0, .26], [.25, .16], [.5, .08], [.75, .03], [1, 0]].forEach(([k, a]) => g.append('stop').attr('offset', k).attr('style', `stop-color:${c};stop-opacity:${a}`));
+      s.append('path').attr('fill', `url(#${id})`).attr('d', d3.area().x((p) => x(p.x)).y0(y(y.domain()[0])).y1((p) => y(p.y))(o.series[0].points));
+    }
+    for (const d of o.series) {
+      s.append('path').attr('fill', 'none').attr('stroke', d.color).attr('stroke-width', d.width || 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
+        .attr('d', d3.line().defined((p) => p.y != null).x((p) => x(p.x)).y((p) => y(p.y))(d.points));
+    }
+    if (o.endLabels) {
+      const items = spread(o.series.map((d, i) => ({ y: y(d.points[d.points.length - 1].y) + 4, t: ends[i], c: d.color })), 13, 10, H - 20);
+      s.append('g').selectAll('text').data(items).join('text').attr('class', 'rx-lab').attr('x', w - mr + 6).attr('y', (d) => d.y).attr('fill', (d) => d.c).text((d) => d.t);
+    }
+    if (o.lastDot) {
+      const d = o.series[0], p = d.points[d.points.length - 1];
+      s.append('circle').attr('cx', x(p.x)).attr('cy', y(p.y)).attr('r', 3).attr('fill', d.color);
+    }
+    // Hover
+    const xs = [...new Set(pts.map((p) => +p.x))].sort((a, b) => a - b);
+    const t = tip(box);
+    const rule = s.append('line').attr('class', 'rx-ax').attr('y1', 8).attr('y2', H - 22).attr('visibility', 'hidden');
+    const dots = s.append('g');
+    s.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, w - mr - ml)).attr('height', H - 20).attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [mx, my] = d3.pointer(ev);
+        const xv = +x.invert(mx); const i = d3.bisectCenter(xs, xv); const at = xs[i];
+        const hits = o.series.map((d) => ({ d, p: d.points.find((p) => +p.x === at) })).filter((h) => h.p && h.p.y != null);
+        rule.attr('x1', x(at)).attr('x2', x(at)).attr('visibility', 'visible');
+        dots.selectAll('circle').data(hits).join('circle').attr('r', 3.5).attr('cx', x(at)).attr('cy', (h) => y(h.p.y)).attr('fill', (h) => h.d.color);
+        t.show(x(at), my, (o.tipFmt || d3.utcFormat('%b %Y'))(new Date(at)), hits.map((h) => ({ color: o.series.length > 1 ? h.d.color : null, name: h.d.name, value: (o.tipVal || o.yFmt)(h.p.y) })));
+      })
+      .on('pointerleave', () => { t.hide(); rule.attr('visibility', 'hidden'); dots.selectAll('*').remove(); });
+  };
+
+  // Horizontal bars (or dots) per item.
+  const hbars = (box, o) => {
+    const row = o.row || 28, top = 6, bottom = 22;
+    const H = o.items.length * row + top + bottom;
+    const { s, w } = svg(box, H);
+    const vals = o.items.map((d) => d.value).filter((v) => v != null);
+    const extra = (o.refs || []).map((r) => r.value);
+    let dom = o.domain;
+    if (!dom) {
+      const lo = d3.min([...vals, ...extra]), hi = d3.max([...vals, ...extra]);
+      dom = o.dots ? [lo - (hi - lo) * 0.08, hi + (hi - lo) * 0.08] : [Math.min(0, lo), Math.max(0, hi)];
+    }
+    const ml = textW(s, o.items.map((d) => d.label), 'rx-lab') + 10;
+    const vlW = textW(s, o.items.map((d) => (d.value == null ? o.nullText || '' : o.fmt(d.value))));
+    const xs0 = d3.scaleLinear(dom, [0, 1]).nice();
+    const negRoom = xs0.domain()[0] < 0 ? vlW + 6 : 0;
+    const x = d3.scaleLinear(xs0.domain(), [ml + negRoom, w - vlW - 8]);
+    const ticks = x.ticks(Math.max(2, Math.floor((w - ml) / 80)));
+    s.append('g').selectAll('line').data(ticks).join('line').attr('class', 'rx-gl').attr('x1', x).attr('x2', x).attr('y1', top).attr('y2', H - bottom);
+    s.append('g').selectAll('text').data(ticks).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').text(o.tickFmt || o.fmt);
+    if (!o.dots) s.append('line').attr('class', 'rx-ax').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top).attr('y2', H - bottom);
+    const yy = (i) => top + i * row + row / 2;
+    const g = s.append('g').selectAll('g').data(o.items).join('g');
+    g.append('text').attr('class', 'rx-lab').attr('x', 0).attr('y', (d, i) => yy(i) + 4).text((d) => d.label).attr('font-weight', (d) => (d.strong ? 600 : null));
+    if (o.dots) {
+      g.append('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - vlW - 8).attr('y1', (d, i) => yy(i)).attr('y2', (d, i) => yy(i));
+      g.append('circle').attr('cx', (d) => x(d.value)).attr('cy', (d, i) => yy(i)).attr('r', (d) => (d.strong ? 6 : 5)).attr('fill', (d) => d.color);
+      g.append('text').attr('class', 'rx-lab').attr('x', (d) => x(d.value) + 10).attr('y', (d, i) => yy(i) + 4).text((d) => o.fmt(d.value));
+    } else {
+      const bh = Math.min(18, row - 8);
+      g.filter((d) => d.value != null).append('rect').attr('x', (d) => Math.min(x(0), x(d.value))).attr('width', (d) => Math.max(1, Math.abs(x(d.value) - x(0))))
+        .attr('y', (d, i) => yy(o.items.indexOf(d)) - bh / 2).attr('height', bh).attr('rx', 3).attr('fill', (d) => d.color);
+      g.append('text').attr('class', 'rx-tick').attr('y', (d) => yy(o.items.indexOf(d)) + 4)
+        .attr('x', (d) => (d.value == null ? x(0) + 6 : d.value < 0 ? x(d.value) - 6 : x(d.value) + 6))
+        .attr('text-anchor', (d) => (d.value != null && d.value < 0 ? 'end' : 'start')).text((d) => (d.value == null ? o.nullText || '' : o.fmt(d.value)));
+    }
+    for (const r of o.refs || []) {
+      s.append('line').attr('class', 'rx-ref').attr('x1', x(r.value)).attr('x2', x(r.value)).attr('y1', top - 4).attr('y2', H - bottom);
+    }
+    if (o.tip) {
+      const t = tip(box);
+      g.append('rect').attr('x', 0).attr('width', w).attr('y', (d, i) => yy(i) - row / 2).attr('height', row).attr('fill', 'transparent')
+        .on('pointermove', (ev, d) => { const [mx, my] = d3.pointer(ev, box); t.show(mx, my, d.label, o.tip(d)); })
+        .on('pointerleave', () => t.hide());
+    }
+  };
+
+  const month = (m) => new Date(m.length === 7 ? m + '-01T00:00:00Z' : m + 'T00:00:00Z');
+  const fact = (id, where) => rows(id).find((r) => Object.entries(where).every(([k, v]) => r[k] === v));
+  return { st, rows, num, F, el, wait, tip, svg, textW, lines, hbars, C, month, fact, spread, trendGroup: 'brand' };
+})();
+
+// Legend swatches take the series colors.
+document.querySelectorAll('[data-sw]').forEach((e) => { e.style.background = dash.colors[+e.dataset.sw]; });
+</script>
+
+<script>
+// Tabs
+const showTab = (name) => {
+  document.querySelectorAll('.rx-page').forEach((p) => { p.hidden = p.id !== name; });
+  document.querySelectorAll('.rx-tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+};
+document.querySelectorAll('.rx-tab').forEach((b) => b.addEventListener('click', () => { showTab(b.dataset.tab); dash.setLink(b.dataset.tab); }));
+const startTab = location.hash.slice(1);
+if (document.getElementById(startTab) && document.getElementById(startTab).classList.contains('rx-page')) showTab(startTab);
+
+document.querySelectorAll('[data-tgroup]').forEach((b) => b.addEventListener('click', () => {
+  R.trendGroup = b.dataset.tgroup;
+  document.querySelectorAll('[data-tgroup]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  dash.draw('trend-mult');
+}));
+['warn-q', 'warn-level', 'warn-agent'].forEach((id) => {
+  const e = document.getElementById(id);
+  if (e) e.addEventListener('input', () => dash.draw('warn-body'));
+});
+</script>
+
+<script>
+// Calculations shown on the page
+dash.calc('peer_fit', {
+  title: 'ROE–P/B fit across peers',
+  description: 'Least-squares line of P/B on forward ROE over the six included peers.',
+  inputs: ['peers'],
+  fn: (peers) => {
+    const p = peers.filter((r) => r.included === 'yes' && r.roe_forward !== '' && r.pbr !== '').map((r) => [+r.roe_forward, +r.pbr]);
+    const n = p.length, mx = d3.mean(p, (d) => d[0]), my = d3.mean(p, (d) => d[1]);
+    const sxy = d3.sum(p, (d) => (d[0] - mx) * (d[1] - my)), sxx = d3.sum(p, (d) => (d[0] - mx) ** 2), syy = d3.sum(p, (d) => (d[1] - my) ** 2);
+    const slope = sxy / sxx;
+    return [{ fit: 'ols', n, intercept: my - slope * mx, slope, r2: (sxy * sxy) / (sxx * syy) }];
+  },
+});
+dash.calc('rakuten_summary', {
+  title: 'Rohto items in Rakuten top 30',
+  description: 'Count of Rohto listings and best rank per category in the latest ranking.',
+  inputs: ['rakuten'],
+  fn: (rakuten) => d3.rollups(rakuten, (v) => ({ n: v.length, rohto: v.filter((r) => r.is_rohto === '1').length, best_rank: d3.min(v.filter((r) => r.is_rohto === '1'), (r) => +r.rank) }), (r) => r.genre_en)
+    .map(([genre_en, d]) => ({ genre_en, ...d })),
+});
+dash.calc('warning_summary', {
+  title: 'Checks by agent and level',
+  description: 'Number of warnings and info notes each agent raised.',
+  inputs: ['warnings'],
+  fn: (warnings) => d3.rollups(warnings, (v) => ({ warning: v.filter((r) => r.level === 'warning').length, info: v.filter((r) => r.level === 'info').length, error: v.filter((r) => r.level === 'error').length }), (r) => r.agent)
+    .map(([agent, d]) => ({ agent, ...d })),
+});
+dash.calc('assumption_summary', {
+  title: 'Inputs by who decided them',
+  description: 'Number of assumption inputs per decider (company, agent placeholder, student, yfinance).',
+  inputs: ['assumptions'],
+  fn: (assumptions) => d3.rollups(assumptions, (v) => v.length, (r) => r.decided_by).map(([decided_by, n]) => ({ decided_by, n })).sort((a, b) => b.n - a.n),
+});
+</script>
+
+<script>
+// Single values
+dash.draw('fact', (node) => {
+  const id = node.dataset.source;
+  if (R.wait(node, [id], false)) return;
+  const where = Object.fromEntries(new URLSearchParams(node.dataset.where || ''));
+  const row = R.fact(id, where);
+  const raw = row ? row[node.dataset.field] : null;
+  const fmt = node.dataset.fmt || 'text';
+  node.classList.remove('rx-up', 'rx-down');
+  if (raw == null || raw === '') { node.textContent = '—'; return; }
+  const v = fmt === 'text' ? raw : +raw;
+  node.textContent = R.F[fmt](v);
+  if (node.dataset.tone === 'sign' && v !== 0) node.classList.add(v > 0 ? 'rx-up' : 'rx-down');
+  if (fmt === 'text' && (raw === 'overweight' || raw === 'underweight')) node.classList.add(raw === 'overweight' ? 'rx-up' : 'rx-down');
+});
+
+// Overview: target price by method
+dash.draw('targets-chart', (node) => {
+  if (R.wait(node, ['targets', 'facts'])) return;
+  node.replaceChildren();
+  const price = +R.fact('facts', { section: 'headline', metric: 'price' }).value;
+  const color = (g) => (g.startsWith('Agent 1 ·') ? 'var(--cds-chart-muted)' : g === 'Agent 1 result' ? R.C(0) : g === 'Agent 2 result' ? R.C(1) : g === 'Debate' ? R.C(2) : 'var(--color-fg-muted)');
+  const items = R.rows('targets').map((r) => ({ label: r.method, value: +r.target_price, color: color(r.group), strong: !r.group.includes('·'), group: r.group }));
+  R.hbars(node, { items, dots: true, fmt: R.F.yen, refs: [{ value: price }], row: 30,
+    tip: (d) => [{ name: d.group, value: R.F.yen(d.value) }, { name: 'vs price', value: R.F.spct(d.value / price - 1) }] });
+});
+
+// Fixed reference: the overweight / underweight threshold
+const THRESHOLD = 0.005;
+dash.draw('threshold', (node) => { node.textContent = (node.dataset.sign === '-' ? '−' : '+') + d3.format('.1%')(THRESHOLD); });
+
+// Agent 1: revenue + margin
+dash.draw('fin-chart', (node) => {
+  if (R.wait(node, ['financials'])) return;
+  node.replaceChildren();
+  const rows = R.rows('financials').map((r) => ({ ...r, rev: +r.revenue / 1000, m: R.num(r.operating_margin), lab: r.period.replace('FY20', 'FY').replace('/3', '') }));
+  const H = 250, { s, w } = R.svg(node, H);
+  const yL = d3.scaleLinear([0, d3.max(rows, (r) => r.rev)], [H - 22, 10]).nice(4);
+  const yR = d3.scaleLinear([0, 0.2], [H - 22, 10]);
+  const lt = yL.ticks(4), rt = yR.ticks(4);
+  const fl = (v) => '¥' + d3.format(',.0f')(v) + 'bn';
+  const ml = R.textW(s, lt.map(fl)) + 8, mr = R.textW(s, rt.map(d3.format('.0%'))) + 8;
+  const x = d3.scaleBand(rows.map((r) => r.lab), [ml, w - mr]).padding(0.3);
+  s.append('g').selectAll('line').data(lt).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - mr).attr('y1', yL).attr('y2', yL);
+  s.append('g').selectAll('text').data(lt).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (d) => yL(d) + 4).attr('text-anchor', 'end').text(fl);
+  s.append('g').selectAll('text').data(rt).join('text').attr('class', 'rx-tick').attr('x', w - mr + 6).attr('y', (d) => yR(d) + 4).text(d3.format('.0%'));
+  const step = x.bandwidth() < 26 ? 2 : 1;
+  s.append('g').selectAll('text').data(rows.filter((r, i) => i % step === 0)).join('text').attr('class', 'rx-tick').attr('x', (r) => x(r.lab) + x.bandwidth() / 2).attr('y', H - 4).attr('text-anchor', 'middle').text((r) => r.lab);
+  const bw = Math.min(32, x.bandwidth()), off = (x.bandwidth() - bw) / 2;
+  s.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.lab) + off).attr('width', bw).attr('y', (r) => yL(r.rev)).attr('height', (r) => yL(0) - yL(r.rev)).attr('rx', 3)
+    .attr('fill', R.C(0)).attr('fill-opacity', (r) => (r.kind === 'forecast' ? 0.35 : 1));
+  const mp = rows.filter((r) => r.m != null);
+  s.append('path').attr('fill', 'none').attr('stroke', R.C(1)).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round')
+    .attr('d', d3.line().x((r) => x(r.lab) + x.bandwidth() / 2).y((r) => yR(r.m))(mp));
+  s.append('g').selectAll('circle').data(mp).join('circle').attr('cx', (r) => x(r.lab) + x.bandwidth() / 2).attr('cy', (r) => yR(r.m)).attr('r', 3).attr('fill', R.C(1));
+  const t = R.tip(node);
+  s.append('g').selectAll('rect').data(rows).join('rect').attr('x', (r) => x(r.lab) - (x.step() - x.bandwidth()) / 2).attr('width', x.step()).attr('y', 0).attr('height', H - 20).attr('fill', 'transparent')
+    .on('pointermove', (ev, r) => {
+      const [, my] = d3.pointer(ev, node);
+      t.show(x(r.lab) + x.bandwidth() / 2, my, r.period + (r.kind === 'forecast' ? ' (forecast)' : ''), [
+        { name: 'Revenue', value: '¥' + d3.format(',.0f')(+r.revenue) + 'm' },
+        { name: 'Operating profit', value: r.operating_profit ? '¥' + d3.format(',.0f')(+r.operating_profit) + 'm' : '—' },
+        { name: 'Operating margin', value: r.m != null ? d3.format('.1%')(r.m) : '—' },
+        { name: 'EPS', value: r.eps_basic ? R.F.yen2(+r.eps_basic) : '—' },
+      ]);
+    })
+    .on('pointerleave', () => t.hide());
+});
+
+dash.draw('seg-chart', (node) => {
+  if (R.wait(node, ['financials'])) return;
+  node.replaceChildren();
+  const rows = R.rows('financials').filter((r) => r.seg_profit_japan !== '' && r.seg_profit_japan != null);
+  const pt = (k) => rows.map((r) => ({ x: new Date(Date.UTC(+r.period.slice(2, 6), 2, 31)), y: +r[k] }));
+  R.lines(node, { h: 240, series: [{ name: 'Japan', color: R.C(0), points: pt('seg_profit_japan') }, { name: 'Asia', color: R.C(1), points: pt('seg_profit_asia') }],
+    yFmt: (v) => '¥' + d3.format(',.0f')(v / 1000) + 'bn', tipVal: (v) => '¥' + d3.format(',.0f')(v) + 'm', zero: true, endLabels: true,
+    xFmt: (d) => 'FY' + String(d.getUTCFullYear()).slice(2), tipFmt: (d) => 'FY' + d.getUTCFullYear() + '/3' });
+});
+
+dash.draw('eps-chart', (node) => {
+  if (R.wait(node, ['consensus'])) return;
+  node.replaceChildren();
+  const rows = R.rows('consensus').map((r) => ({ p: r.period, mine: +r.mine, avg: +r.eps_avg, lo: +r.eps_low, hi: +r.eps_high, n: +r.n_analysts }));
+  const row = 44, H = rows.length * row + 26, { s, w } = R.svg(node, H);
+  const ml = R.textW(s, rows.map((r) => r.p), 'rx-lab') + 12;
+  const x = d3.scaleLinear([d3.min(rows, (r) => Math.min(r.lo, r.mine)) * 0.98, d3.max(rows, (r) => r.hi) * 1.01], [ml, w - 12]).nice();
+  const ticks = x.ticks(Math.max(2, Math.floor((w - ml) / 70)));
+  s.append('g').selectAll('line').data(ticks).join('line').attr('class', 'rx-gl').attr('x1', x).attr('x2', x).attr('y1', 4).attr('y2', H - 20);
+  s.append('g').selectAll('text').data(ticks).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text((v) => '¥' + v);
+  const g = s.append('g').selectAll('g').data(rows).join('g').attr('transform', (r, i) => `translate(0,${i * row + row / 2})`);
+  g.append('text').attr('class', 'rx-lab').attr('y', 4).text((r) => r.p);
+  g.append('line').attr('x1', (r) => x(r.lo)).attr('x2', (r) => x(r.hi)).attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 8).attr('stroke-linecap', 'round');
+  g.append('circle').attr('cx', (r) => x(r.avg)).attr('r', 6).attr('fill', R.C(1));
+  g.append('circle').attr('cx', (r) => x(r.mine)).attr('r', 6).attr('fill', R.C(0));
+  const t = R.tip(node);
+  g.append('rect').attr('x', 0).attr('width', w).attr('y', -row / 2).attr('height', row).attr('fill', 'transparent')
+    .on('pointermove', (ev, r) => { const [mx, my] = d3.pointer(ev, node); t.show(mx, my, r.p + ' EPS', [
+      { color: R.C(0), name: 'My forecast', value: R.F.yen2(r.mine) }, { color: R.C(1), name: 'Consensus mean', value: R.F.yen2(r.avg) },
+      { name: 'Range (' + r.n + ' analysts)', value: R.F.yen2(r.lo) + '–' + R.F.yen2(r.hi) }, { name: 'Gap to mean', value: R.F.spct(r.mine / r.avg - 1) }]); })
+    .on('pointerleave', () => t.hide());
+});
+
+dash.draw('pe-band', (node) => {
+  if (R.wait(node, ['facts'])) return;
+  node.replaceChildren();
+  const f = (m) => +R.fact('facts', { section: 'pe_band', metric: m }).value;
+  const b = { min: f('min'), p25: f('p25'), med: f('median'), p75: f('p75'), max: f('max'), tgt: f('target_pe') };
+  const fwd = +R.fact('facts', { section: 'valuation', metric: 'pe_forward' }).value;
+  const H = 110, { s, w } = R.svg(node, H);
+  const x = d3.scaleLinear([Math.floor(b.min) - 1, Math.ceil(b.max) + 1], [12, w - 12]);
+  const cy = 50;
+  s.append('line').attr('x1', x(b.min)).attr('x2', x(b.max)).attr('y1', cy).attr('y2', cy).attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 2);
+  s.append('rect').attr('x', x(b.p25)).attr('width', x(b.p75) - x(b.p25)).attr('y', cy - 12).attr('height', 24).attr('rx', 3).attr('fill', 'var(--cds-chart-muted)').attr('fill-opacity', 0.5);
+  s.append('line').attr('x1', x(b.med)).attr('x2', x(b.med)).attr('y1', cy - 12).attr('y2', cy + 12).attr('stroke', 'var(--color-fg)').attr('stroke-width', 2);
+  const marks = [{ v: b.tgt, c: R.C(0), t: 'Target ' + R.F.x(b.tgt), up: true }, { v: fwd, c: R.C(1), t: 'Now (fwd) ' + R.F.x(fwd), up: false }];
+  for (const m of marks) {
+    s.append('line').attr('x1', x(m.v)).attr('x2', x(m.v)).attr('y1', m.up ? cy - 22 : cy).attr('y2', m.up ? cy : cy + 22).attr('stroke', m.c).attr('stroke-width', 2);
+    s.append('circle').attr('cx', x(m.v)).attr('cy', m.up ? cy - 22 : cy + 22).attr('r', 4).attr('fill', m.c);
+    s.append('text').attr('class', 'rx-lab').attr('x', x(m.v)).attr('y', m.up ? cy - 30 : cy + 38).attr('text-anchor', x(m.v) < w / 2 ? 'start' : 'end').attr('fill', m.c).text(m.t);
+  }
+  const lab = [[b.min, 'min ' + R.F.x(b.min)], [b.med, 'median ' + R.F.x(b.med)], [b.max, 'max ' + R.F.x(b.max)]];
+  s.append('g').selectAll('text').data(lab).join('text').attr('class', 'rx-tick').attr('x', (d) => x(d[0])).attr('y', H - 4)
+    .attr('text-anchor', (d, i) => (i === 0 ? 'start' : i === 2 ? 'end' : 'middle')).text((d) => d[1]);
+});
+
+dash.draw('price-chart', (node) => {
+  if (R.wait(node, ['price_monthly', 'facts'])) return;
+  node.replaceChildren();
+  const pts = R.rows('price_monthly').map((r) => ({ x: R.month(r.date), y: +r.close }));
+  const tgt = +R.fact('facts', { section: 'headline', metric: 'agent1_target' }).value;
+  const an = +R.fact('facts', { section: 'headline', metric: 'analyst_target' }).value;
+  R.lines(node, { h: 260, series: [{ name: 'Close', color: R.C(0), points: pts }], yFmt: (v) => '¥' + d3.format(',.0f')(v), area: true, lastDot: true,
+    refs: [{ y: tgt, label: 'Agent 1 target' }, { y: an, label: 'Analyst mean' }] });
+});
+
+dash.draw('peer-scatter', (node) => {
+  if (R.wait(node, ['peers', 'peer_fit'])) return;
+  node.replaceChildren();
+  const rows = R.rows('peers').filter((r) => r.roe_forward !== '' && r.pbr !== '').map((r) => ({ ...r, x: +r.roe_forward, y: +r.pbr }));
+  const fit = dash.data('peer_fit').data[0];
+  const H = 260, { s, w } = R.svg(node, H);
+  const y = d3.scaleLinear([0.8, d3.max(rows, (r) => r.y) * 1.1], [H - 22, 10]).nice(4);
+  const yt = y.ticks(4), ml = R.textW(s, yt.map((v) => v.toFixed(1) + '×')) + 8;
+  const x = d3.scaleLinear([0.02, d3.max(rows, (r) => r.x) * 1.08], [ml, w - 16]).nice(5);
+  const xt = x.ticks(Math.max(2, Math.floor((w - ml) / 70)));
+  s.append('g').selectAll('line').data(yt).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - 16).attr('y1', y).attr('y2', y);
+  s.append('g').selectAll('text').data(yt).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (v) => y(v) + 4).attr('text-anchor', 'end').text((v) => v.toFixed(1) + '×');
+  s.append('g').selectAll('text').data(xt).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text(d3.format('.0%'));
+  const [x0, x1] = x.domain();
+  s.append('line').attr('class', 'rx-ref').attr('x1', x(x0)).attr('x2', x(x1)).attr('y1', y(fit.intercept + fit.slope * x0)).attr('y2', y(fit.intercept + fit.slope * x1));
+  const g = s.append('g').selectAll('g').data(rows).join('g');
+  g.append('circle').attr('cx', (r) => x(r.x)).attr('cy', (r) => y(r.y)).attr('r', (r) => (r.included === 'self' ? 7 : 5))
+    .attr('fill', (r) => (r.included === 'self' ? R.C(0) : r.included === 'yes' ? 'var(--cds-chart-muted)' : 'none'))
+    .attr('stroke', (r) => (r.included === 'excluded' ? 'var(--cds-chart-muted)' : 'none')).attr('stroke-width', 1.5);
+  g.append('text').attr('class', 'rx-lab').attr('x', (r) => x(r.x) + (x(r.x) > w - 90 ? -9 : 9)).attr('y', (r) => y(r.y) + 4)
+    .attr('text-anchor', (r) => (x(r.x) > w - 90 ? 'end' : 'start')).attr('font-weight', (r) => (r.included === 'self' ? 600 : null)).text((r) => r.name_en);
+  const t = R.tip(node);
+  g.append('circle').attr('cx', (r) => x(r.x)).attr('cy', (r) => y(r.y)).attr('r', 14).attr('fill', 'transparent')
+    .on('pointermove', (ev, r) => { t.show(x(r.x), y(r.y), r.name_en + ' (' + r.ticker + ')', [{ name: 'Forward ROE', value: d3.format('.1%')(r.x) }, { name: 'P/B', value: r.y.toFixed(2) + '×' }, { name: 'Fitted P/B', value: (fit.intercept + fit.slope * r.x).toFixed(2) + '×' }]); })
+    .on('pointerleave', () => t.hide());
+});
+
+dash.draw('peers-body', (tb) => {
+  if (R.wait(tb, ['peers'])) return;
+  const f = (v, k) => (v === '' || v == null ? '—' : k === 'x' ? (+v).toFixed(1) + '×' : d3.format('.1%')(+v));
+  tb.replaceChildren(...R.rows('peers').map((r) => {
+    const tr = R.el('tr', r.included === 'self' ? 'rx-self' : r.included === 'excluded' ? 'rx-off' : null);
+    tr.append(R.el('td', null, r.ticker), R.el('td', null, r.name_en + (r.included === 'excluded' ? ' (excluded)' : '')),
+      R.el('td', 'n', f(r.pe_forward, 'x')), R.el('td', 'n', f(r.ev_ebitda_forward, 'x')), R.el('td', 'n', f(r.pbr, 'x')),
+      R.el('td', 'n', f(r.roe_forward)), R.el('td', 'n', f(r.op_margin_forward)), R.el('td', 'n', f(r.dividend_yield)));
+    return tr;
+  }));
+});
+
+// Agent 2
+dash.draw('yoy-chart', (node) => {
+  if (R.wait(node, ['alt_signals'])) return;
+  node.replaceChildren();
+  const col = (g) => (g === 'brand' ? R.C(0) : g === 'symptom' ? R.C(1) : 'var(--cds-chart-muted)');
+  const order = { brand: 0, symptom: 1, inbound_detail: 2, inbound: 3 };
+  const items = R.rows('alt_signals').map((r) => ({ label: r.name_en, value: +r.yoy, color: col(r.group), g: r.group, win: r.window, src: r.source, gname: r.group_en }))
+    .sort((a, b) => order[a.g] - order[b.g] || b.value - a.value);
+  R.hbars(node, { items, fmt: R.F.spct, tickFmt: d3.format('.0%'), row: 26, tip: (d) => [{ name: d.gname, value: R.F.spct(d.value) }, { name: 'Window', value: d.win }, { name: 'Source', value: d.src }] });
+});
+
+dash.draw('trend-mult', (node) => {
+  if (R.wait(node, ['trends_monthly', 'alt_signals'])) return;
+  node.replaceChildren();
+  const g = R.trendGroup;
+  const rows = R.rows('trends_monthly').filter((r) => r.group === g);
+  const yoy = Object.fromEntries(R.rows('alt_signals').map((r) => [r.name, +r.yoy]));
+  for (const [term, rs] of d3.groups(rows, (r) => r.term)) {
+    const card = R.el('div', 'rx-mini rx-card');
+    const head = R.el('div', 'rx-mini-h');
+    const y = yoy[term];
+    const yv = R.el('span', y > 0 ? 'rx-up' : y < 0 ? 'rx-down' : null, y == null ? '' : R.F.spct(y) + ' YoY');
+    head.append(R.el('span', null, rs[0].term_en + ' · ' + term), yv);
+    const box = R.el('div', 'rx-chart rx-sm');
+    card.append(head, box);
+    node.append(card);
+    R.lines(box, { h: 120, series: [{ name: rs[0].term_en, color: g === 'brand' ? R.C(0) : R.C(1), points: rs.map((r) => ({ x: R.month(r.month), y: +r.value })) }],
+      yFmt: d3.format('.0f'), yDomain: [0, 100], area: true, lastDot: true, shadeFrom: R.month('2026-04') });
+  }
+});
+
+dash.draw('share-mult', (node) => {
+  if (R.wait(node, ['share_monthly'])) return;
+  node.replaceChildren();
+  for (const [set, rs] of d3.groups(R.rows('share_monthly'), (r) => r.set)) {
+    const card = R.el('div', 'rx-mini rx-card');
+    const head = R.el('div', 'rx-mini-h');
+    head.append(R.el('span', null, rs[0].set_en + ' · ' + set), R.el('span', null, d3.format('.0%')(+rs[rs.length - 1].rohto_share) + ' latest'));
+    const box = R.el('div', 'rx-chart rx-sm');
+    card.append(head, box);
+    node.append(card);
+    R.lines(box, { h: 120, series: [{ name: 'Rohto share', color: R.C(0), points: rs.map((r) => ({ x: R.month(r.month), y: +r.rohto_share })) }],
+      yFmt: d3.format('.0%'), zero: true, area: true, lastDot: true, shadeFrom: R.month('2026-04'), tipVal: d3.format('.1%') });
+  }
+});
+
+dash.draw('jnto-chart', (node) => {
+  if (R.wait(node, ['jnto'])) return;
+  node.replaceChildren();
+  const by = d3.group(R.rows('jnto'), (r) => r.market);
+  const pts = (k) => (by.get(k) || []).map((r) => ({ x: R.month(r.month), y: +r.visitors }));
+  R.lines(node, { h: 240, series: [{ name: 'All visitors', color: R.C(0), points: pts('総数') }, { name: 'China', color: R.C(1), points: pts('中国') }],
+    yFmt: (v) => d3.format('.2~s')(v).replace('G', 'B'), tipVal: d3.format(','), zero: true });
+});
+
+dash.draw('uv-chart', (node) => {
+  if (R.wait(node, ['uv'])) return;
+  node.replaceChildren();
+  R.lines(node, { h: 240, series: [{ name: 'UV index', color: R.C(1), points: R.rows('uv').map((r) => ({ x: R.month(r.month), y: +r.uv_index_max_mean })) }],
+    yFmt: d3.format('.0f'), tipVal: d3.format('.1f'), zero: true, area: true, lastDot: true, shadeFrom: R.month('2026-04') });
+});
+
+dash.draw('rakuten-body', (tb) => {
+  if (R.wait(tb, ['rakuten'])) return;
+  tb.replaceChildren(...R.rows('rakuten').filter((r) => r.is_rohto === '1').sort((a, b) => a.genre_en.localeCompare(b.genre_en) || +a.rank - +b.rank).map((r) => {
+    const tr = R.el('tr');
+    tr.dataset.key = encodeURIComponent(r.genre) + ',' + encodeURIComponent(r.rank);
+    tr.append(R.el('td', null, r.genre_en), R.el('td', 'n', r.rank), R.el('td', null, r.item_name), R.el('td', 'n', R.F.yen(+r.price)));
+    return tr;
+  }));
+});
+
+// Debate
+dash.draw('debate-chart', (node) => {
+  if (R.wait(node, ['debate', 'facts'])) return;
+  node.replaceChildren();
+  const rows = R.rows('debate');
+  const price = +R.fact('facts', { section: 'debate', metric: 'price' }).value;
+  const steps = ['Before debate', 'Round 1', 'Round 3', 'Moderator'];
+  const H = 240, { s, w } = R.svg(node, H);
+  const vals = [...rows.map((r) => +r.target_price), price];
+  const y = d3.scaleLinear([d3.min(vals) - 20, d3.max(vals) + 20], [H - 24, 10]).nice(5);
+  const yt = y.ticks(5), ml = R.textW(s, yt.map(R.F.yen)) + 8;
+  const ends = ['Agent 1', 'Agent 2', 'Final'].map((n) => n + ' ¥0,000');
+  const mr = R.textW(s, ends) + 16;
+  const x = d3.scalePoint(steps, [ml + 20, w - mr]);
+  s.append('g').selectAll('line').data(yt).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - mr + 8).attr('y1', y).attr('y2', y);
+  s.append('g').selectAll('text').data(yt).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (v) => y(v) + 4).attr('text-anchor', 'end').text(R.F.yen);
+  s.append('g').selectAll('text').data(steps).join('text').attr('class', 'rx-tick').attr('x', (d) => x(d)).attr('y', H - 4).attr('text-anchor', 'middle').text((d) => d);
+  s.append('line').attr('class', 'rx-ref').attr('x1', ml).attr('x2', w - mr + 8).attr('y1', y(price)).attr('y2', y(price));
+  s.append('text').attr('class', 'rx-tick').attr('x', ml + 4).attr('y', y(price) - 4).text('Price then ' + R.F.yen(price));
+  const ser = [['Agent 1', R.C(0)], ['Agent 2', R.C(1)], ['Moderator', R.C(2)]];
+  const labels = [];
+  const t = R.tip(node);
+  for (const [name, c] of ser) {
+    const pts = rows.filter((r) => r.agent === name).map((r) => ({ x: x(steps[+r.step]), y: y(+r.target_price), v: +r.target_price, st: steps[+r.step] }));
+    s.append('path').attr('fill', 'none').attr('stroke', c).attr('stroke-width', 2).attr('d', d3.line().x((p) => p.x).y((p) => p.y)(pts));
+    s.append('g').selectAll('circle').data(pts).join('circle').attr('cx', (p) => p.x).attr('cy', (p) => p.y).attr('r', name === 'Moderator' ? 6 : 4).attr('fill', c)
+      .on('pointermove', (ev, p) => t.show(p.x, p.y, p.st, [{ color: c, name, value: R.F.yen(p.v) }])).on('pointerleave', () => t.hide());
+    const last = pts[pts.length - 1];
+    if (last) labels.push({ x: last.x + 10, y: last.y + 4, t: (name === 'Moderator' ? 'Final' : name) + ' ' + R.F.yen(last.v), c });
+  }
+  R.spread(labels, 14, 10, H - 24);
+  s.append('g').selectAll('text').data(labels).join('text').attr('class', 'rx-lab').attr('x', (d) => d.x).attr('y', (d) => d.y).attr('fill', (d) => d.c).text((d) => d.t);
+});
+
+// Data & checks
+dash.draw('inv-body', (tb) => {
+  if (R.wait(tb, ['inventory'])) return;
+  tb.replaceChildren(...R.rows('inventory').map((r) => {
+    const tr = R.el('tr');
+    const stTd = R.el('td');
+    stTd.append(R.el('span', 'rx-pill ' + (r.status === 'ok' ? 'ok' : r.status.startsWith('last') ? 'warning' : 'info'), r.status));
+    tr.append(R.el('td', null, r.dataset), R.el('td', null, r.source), R.el('td', 'n', R.F.int(+r.rows)), R.el('td', null, r.coverage), R.el('td', null, r.used_by), R.el('td', null, r.updated || '—'), stTd);
+    return tr;
+  }));
+});
+
+dash.draw('asm-chart', (node) => {
+  if (R.wait(node, ['assumption_summary'])) return;
+  node.replaceChildren();
+  const name = { agent: 'Agent placeholder', company: 'Company disclosure', student: 'My decision', yfinance: 'yfinance' };
+  const col = { agent: 'var(--cds-chart-muted)', company: R.C(0), student: R.C(2), yfinance: R.C(1) };
+  R.hbars(node, { items: dash.data('assumption_summary').data.map((r) => ({ label: name[r.decided_by] || r.decided_by, value: r.n, color: col[r.decided_by] || R.C(4) })), fmt: d3.format(',.0f'), row: 30 });
+});
+
+dash.draw('warn-chart', (node) => {
+  if (R.wait(node, ['warning_summary'])) return;
+  node.replaceChildren();
+  const rows = dash.data('warning_summary').data;
+  const row = 34, H = rows.length * row + 26, { s, w } = R.svg(node, H);
+  const ml = R.textW(s, rows.map((r) => r.agent), 'rx-lab') + 12;
+  const x = d3.scaleLinear([0, d3.max(rows, (r) => r.warning + r.info + r.error)], [ml, w - 40]).nice();
+  const xt = x.ticks(4);
+  s.append('g').selectAll('line').data(xt).join('line').attr('class', 'rx-gl').attr('x1', x).attr('x2', x).attr('y1', 4).attr('y2', H - 20);
+  s.append('g').selectAll('text').data(xt).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text(d3.format(',.0f'));
+  const g = s.append('g').selectAll('g').data(rows).join('g').attr('transform', (r, i) => `translate(0,${i * row + row / 2})`);
+  g.append('text').attr('class', 'rx-lab').attr('y', 4).text((r) => r.agent);
+  g.append('rect').attr('x', x(0)).attr('width', (r) => x(r.warning + r.error) - x(0)).attr('y', -9).attr('height', 18).attr('rx', 3).attr('fill', R.C(3));
+  g.append('rect').attr('x', (r) => x(r.warning + r.error) + 1).attr('width', (r) => Math.max(0, x(r.warning + r.error + r.info) - x(r.warning + r.error) - 1)).attr('y', -9).attr('height', 18).attr('rx', 3).attr('fill', 'var(--cds-chart-muted)');
+  g.append('text').attr('class', 'rx-tick').attr('x', (r) => x(r.warning + r.error + r.info) + 6).attr('y', 4).text((r) => r.warning + ' / ' + r.info);
+});
+
+dash.draw('asm-body', (tb) => {
+  if (R.wait(tb, ['assumptions'])) return;
+  const who = { agent: 'warning', company: 'ok', student: 'info', yfinance: 'info' };
+  tb.replaceChildren(...R.rows('assumptions').map((r) => {
+    const tr = R.el('tr');
+    tr.dataset.key = encodeURIComponent(r.agent) + ',' + encodeURIComponent(r.field);
+    const d = R.el('td'); d.append(R.el('span', 'rx-pill ' + (who[r.decided_by] || 'info'), r.decided_by));
+    tr.append(R.el('td', null, r.agent), R.el('td', null, r.field), R.el('td', 'n', r.value), d, R.el('td', null, r.reason));
+    return tr;
+  }));
+});
+
+dash.draw('warn-body', (tb) => {
+  if (R.wait(tb, ['warnings'])) return;
+  const qEl = document.getElementById('warn-q'), lEl = document.getElementById('warn-level'), aEl = document.getElementById('warn-agent');
+  const q = (qEl ? qEl.value : '').trim().toLowerCase(), lv = lEl ? lEl.value : '', ag = aEl ? aEl.value : '';
+  tb.replaceChildren(...R.rows('warnings')
+    .filter((r) => (!lv || r.level === lv) && (!ag || r.agent === ag) && (!q || (r.message + ' ' + r.code + ' ' + r.ref).toLowerCase().includes(q)))
+    .map((r) => {
+      const tr = R.el('tr');
+      const lvTd = R.el('td'); lvTd.append(R.el('span', 'rx-pill ' + r.level, r.level));
+      tr.append(R.el('td', 'n', r.id), R.el('td', null, r.agent), lvTd, R.el('td', null, r.code), R.el('td', null, r.message), R.el('td', null, r.ref));
+      return tr;
+    }));
+});
+</script>
+<footer class="rx-foot">
+  <p>Built from the Fukuhara seminar project. Agent 1 and Agent 2 run weekly; scripts/build_dashboard_data.py turns their outputs into the files below. Figures marked yfinance are secondary sources used for cross-checks only.</p>
+  <ul>
+    <li><a href="data/facts.csv">facts.csv</a></li>
+    <li><a href="data/financials.csv">financials.csv</a></li>
+    <li><a href="data/targets.csv">targets.csv</a></li>
+    <li><a href="data/peers.csv">peers.csv</a></li>
+    <li><a href="data/consensus.csv">consensus.csv</a></li>
+    <li><a href="data/price_monthly.csv">price_monthly.csv</a></li>
+    <li><a href="data/alt_signals.csv">alt_signals.csv</a></li>
+    <li><a href="data/alt_groups.csv">alt_groups.csv</a></li>
+    <li><a href="data/trends_monthly.csv">trends_monthly.csv</a></li>
+    <li><a href="data/share_monthly.csv">share_monthly.csv</a></li>
+    <li><a href="data/jnto.csv">jnto.csv</a></li>
+    <li><a href="data/uv.csv">uv.csv</a></li>
+    <li><a href="data/rakuten.csv">rakuten.csv</a></li>
+    <li><a href="data/debate.csv">debate.csv</a></li>
+    <li><a href="data/assumptions.csv">assumptions.csv</a></li>
+    <li><a href="data/warnings.csv">warnings.csv</a></li>
+    <li><a href="data/inventory.csv">inventory.csv</a></li>
+  </ul>
+</footer>
+</main>
+</body>
+</html>

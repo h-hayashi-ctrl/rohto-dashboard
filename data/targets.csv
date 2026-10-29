@@ -1,0 +1,10 @@
+method,group,target_price
+Own P/E,Agent 1 · own multiple,2918
+Own EV/EBITDA,Agent 1 · own multiple,2883
+Peer P/E,Agent 1 · peer multiple,3994
+Peer EV/EBITDA,Agent 1 · peer multiple,2785
+ROE–PBR regression,Agent 1 · peer multiple,2974
+Agent 1 blend,Agent 1 result,3076
+Agent 2 adjusted,Agent 2 result,3099
+Debate final (Oct 20),Debate,3074
+Analyst mean,Market,3349

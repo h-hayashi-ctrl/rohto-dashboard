@@ -1,0 +1,40 @@
+agent,field,value,decided_by,reason
+Agent 1,market.price,2777.5,yfinance,2026-10-26終値（yfinance、二次情報。2026-10-26T22:36:03 取得）
+Agent 1,market.shares_basic_mn,225.964,company,FY2026/3 期中平均株式数（決算短信 サマリーP2）
+Agent 1,market.dilutive_shares_mn,9.497,company,FY2026/3 潜在株式（CB 8.837 + 新株予約権 0.659、決算短信）
+Agent 1,market.dps_forecast,50,company,FY2027/3 配当予想
+Agent 1,balance_sheet.cash,86816,company,FY2026/3 現金及び預金（決算短信。EDINET 有報 S100YE5N の値と一致を確認 2026-10-22）
+Agent 1,balance_sheet.debt,52930,company,短期借入金+CB+長期借入金（リース除く、決算短信 連結貸借対照表）
+Agent 1,balance_sheet.minority_interest,18346,company,FY2026/3 非支配株主持分（決算短信。EDINET 有報 S100YE5N の値と一致を確認 2026-10-22）
+Agent 1,forecast.FY2027/3.revenue,372300,company,8/6上方修正後の会社予想（二次情報、要確認）
+Agent 1,forecast.FY2027/3.operating_profit,45000,company,同上
+Agent 1,forecast.FY2027/3.net_income,35200,company,同上
+Agent 1,forecast.FY2027/3.da_plus_goodwill,18600,agent,"FY26/3実績(15,329+2,048)から微増と仮置き"
+Agent 1,forecast.FY2028/3.revenue_growth,0.06,agent,日本+2.5%、海外+9%程度の仮置き
+Agent 1,forecast.FY2028/3.operating_margin,0.122,agent,FY27/3会社予想並み
+Agent 1,forecast.FY2028/3.net_to_op_ratio,0.782,agent,FY27/3会社予想の純利益/営業利益
+Agent 1,valuation.target_pe,18.0,agent,現在の実績PERを仮置き。ピアPERで要根拠づけ
+Agent 1,valuation.target_ev_ebitda,10.0,agent,現在のEV/EBITDA(約10.3倍)を仮置き
+Agent 1,valuation.peer_weight,0.5,agent,目標株価 = (1−w)×自社倍率の評価 + w×競合倍率の評価。仮置き0.5（10/15の議論ではモデレーターが競合比較に0.55）
+Agent 1,portfolio.benchmark_expected_return,0.06,agent,クラス統一値に置換
+Agent 1,portfolio.confidence,0.25,student,2026-10-20 debate の結論を採用。Altデータ（ブランド検索+21%、インバウンド−23%）の方向が割れ、予想を裏付けなかったため0.3→0.25
+Agent 1 · peers,peers.4452.include,True,agent,国内日用品・スキンケア最大手。棚で直接競合
+Agent 1 · peers,peers.4912.include,True,agent,目薬（スマイル）でロートと直接競合
+Agent 1 · peers,peers.4536.include,True,agent,目薬の専業。ただし医療用が中心
+Agent 1 · peers,peers.4911.include,True,agent,スキンケア。ただし百貨店・高価格帯中心で業績が低迷中
+Agent 1 · peers,peers.4922.include,True,agent,スキンケア。ドラッグストア向けブランドあり
+Agent 1 · peers,peers.4927.include,True,agent,スキンケア専業（訪販・直販中心）
+Agent 1 · peers,peers.4967.include,False,agent,9/25に非公開化の初期提案を公表。株価がTOB期待で動くため倍率の比較から除外（参考表示のみ）
+Agent 1 · peers,filters.pe_max,60,agent,赤字・一時的な減益で倍率が極端な会社を外れ値として除外する上限
+Agent 1 · peers,capm.risk_free,,agent,10年国債利回り。peers_financials.csv の JGB10Y（財務省、2026-10-14: 3.015%）を優先して使う
+Agent 1 · peers,capm.market_risk_premium,0.06,agent,日本株の市場リスクプレミアムとして一般的な5〜7%の中央を仮置き
+Agent 1 · peers,capm.beta,,agent,ロートのベータ。peers_financials.csv の自己計算値（TOPIX ETF比・週次2年）を優先して使う
+Agent 1 · peers,capm.blume_adjust,True,agent,週次2年のベータは推定誤差が大きいので、修正ベータ 0.67×β+0.33 を使う
+Agent 2,model.use_inbound,False,student,2026-10-22 判断。インバウンドの売上比率・中国客の割合が開示されておらず、訪日客数は購買額でもないため、予想の計算には使わず参考表示にする。観光庁の消費動向調査や店頭観測で裏付けられたら見直す
+Agent 2,model.elasticity_brand,0.1,agent,ブランド検索数が前年比+10%なら日本の売上+1%と仮置き。過去データでの検証はまだ
+Agent 2,model.elasticity_symptom,0.05,agent,症状の検索数・UVは需要の環境要因。ブランドより弱いと仮置き
+Agent 2,model.inbound_share_of_japan,0.1,agent,日本の売上に占めるインバウンドの割合。会社の開示がないため仮置き（決算説明資料で要確認）
+Agent 2,model.china_weight_in_inbound,0.5,agent,インバウンド購買に占める中国客の割合。仮置き
+Agent 2,model.incremental_op_margin,0.2,agent,売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き
+Agent 2,confidence.base,0.3,agent,Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す
+Agent 2,confidence.step,0.05,agent,シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する

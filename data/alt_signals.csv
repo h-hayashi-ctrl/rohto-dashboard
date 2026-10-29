@@ -1,0 +1,18 @@
+name,name_en,group,group_en,source,yoy,window
+肌ラボ,Hada Labo,brand,Brand search,google_trends,0.2932,2026-04–2026-10
+メラノCC,Melano CC,brand,Brand search,google_trends,0.0371,2026-04–2026-10
+スキンアクア,Skin Aqua,brand,Brand search,google_trends,-0.2125,2026-04–2026-10
+ロート 目薬,Rohto eye drops,brand,Brand search,google_trends,0.4215,2026-04–2026-10
+アルガード,Alguard,brand,Brand search,google_trends,0.0729,2026-04–2026-10
+花粉症,Hay fever,symptom,Symptoms & weather,google_trends,-0.1056,2026-04–2026-10
+ドライアイ,Dry eye,symptom,Symptoms & weather,google_trends,0.0613,2026-04–2026-10
+眼精疲労,Eye strain,symptom,Symptoms & weather,google_trends,-0.1077,2026-04–2026-10
+目のかゆみ,Itchy eyes,symptom,Symptoms & weather,google_trends,0.018,2026-04–2026-10
+ニキビ,Acne,symptom,Symptoms & weather,google_trends,-0.0741,2026-04–2026-10
+シミ,Dark spots,symptom,Symptoms & weather,google_trends,-0.0014,2026-04–2026-10
+胃もたれ,Indigestion,symptom,Symptoms & weather,google_trends,-0.039,2026-04–2026-10
+UV指数（東京・月平均）,UV index (Tokyo),symptom,Symptoms & weather,open_meteo,-0.0782,2026-04–2026-09
+訪日客数（総数）,Visitors to Japan (all),inbound_detail,Inbound (detail),jnto,-0.0505,2026-04–2026-09
+訪日客数（中国）,Visitors from China,inbound_detail,Inbound (detail),jnto,-0.5584,2026-04–2026-09
+訪日客数（中国以外）,Visitors excl. China,inbound_detail,Inbound (detail),jnto,0.1121,2026-04–2026-09
+インバウンド購買の代理（中国×0.5＋中国以外×0.50）,Inbound purchase proxy,inbound,Inbound proxy,jnto,-0.2232,2026-04–2026-09
