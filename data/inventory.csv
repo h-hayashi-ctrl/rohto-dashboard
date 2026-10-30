@@ -8,7 +8,7 @@ Google Trends (share of search),data/alt/google_trends_share.csv,3654,2021-10-24
 Visitors to Japan,data/alt/jnto_visitors.csv,570,2003-01 → 2026-09,JNTO monthly statistics,Agent 2 (reference only),2026-10-26,ok
 Cosmetics exports to China + HK,data/alt/cosmetics_exports.csv,204,2021-01 → 2026-08 · HS 3304,"UN Comtrade (Japan customs, in USD)",Agent 2 · Agent 3 (reference only),2026-10-30,ok
 "UV index, Tokyo",data/alt/uv_index.csv,66,2021-04 → 2026-09,Open-Meteo,Agent 2,2026-10-26,ok
-Rakuten bestseller ranking,data/alt/rakuten_ranking.csv,60,"Eye drops, lotion · top 30",Rakuten Ichiba ranking,Agent 2 · Agent 3 (reference),2026-10-20,last fetch failed (403)
+Rakuten bestseller ranking,data/alt/rakuten_ranking.csv,180,"Eye drops, lotion · top 30",Rakuten Ichiba ranking,Agent 2 · Agent 3 (reference),,ok
 TDnet disclosures,data/competitor/disclosures.csv,57,"Rohto + 7 peers, last 180 days","TDnet via yanoshin WebAPI, primary",Agent 3,2026-10-30,ok
 Ad & promotion spend,data/competitor/ad_spend.csv,16,"Rohto + 7 peers, last 2 fiscal years","EDINET annual reports (XBRL), primary",Agent 3,2026-10-30,ok
 Store shelf observations,field/test_observations.csv,0,Protocol ready,Own field survey,"Agent 3 (shelf share, stock-outs, 4P)",,not started

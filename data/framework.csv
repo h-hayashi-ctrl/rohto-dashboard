@@ -9,13 +9,13 @@ frame,axis,item,evidence,use,score
 3C,Company,Operating margin (company forecast),Rohto 12.1% vs peer median 9.7%,scored,1
 3C,Company,Own M&A,"Acquisition: Thann Oryza Co., Ltd. (2026-05-29)",reference,
 4P,Product,New product / price filings,None in the last 180 days,waiting,
-4P,Product,Products in e-commerce top 30,"Lotion 1 of top 30 (best #19); Eye drops 13 of top 30 (best #1) · Rakuten, 2026-10-20",reference,
+4P,Product,Products in e-commerce top 30,"Sunscreen 0 of top 30 (best #—); 美容液 0 of top 30 (best #—) · Rakuten, 2026-10-30",reference,
 4P,Product,Shelf assortment,Waiting for store visits,waiting,
-4P,Price,E-commerce unit price,Eye drops per mL: Rohto ¥72.0 vs others ¥62.3,reference,
+4P,Price,E-commerce unit price,Waiting for data,waiting,
 4P,Price,Shelf unit price,Waiting for store visits,waiting,
 4P,Place,Shelf facing share change,Waiting for store visits,waiting,
 4P,Place,Stock-out gap (peer brands − Rohto),Waiting for store visits,waiting,
-4P,Place,E-commerce top-30 slots,"Lotion 1 of top 30 (best #19); Eye drops 13 of top 30 (best #1) · Rakuten, 2026-10-20",reference,
+4P,Place,E-commerce top-30 slots,"Sunscreen 0 of top 30 (best #—); 美容液 0 of top 30 (best #—) · Rakuten, 2026-10-30",reference,
 4P,Promotion,Promotion efficiency (sales growth − A&P growth),Rohto sales +11.4% vs A&P +8.9%; +4.7pt above the peer median,scored,1
 4P,Promotion,A&P to sales,Rohto 18.2% of sales vs peer median 13.6%,reference,
 4P,Promotion,In-store promotion rate,Waiting for store visits,waiting,
