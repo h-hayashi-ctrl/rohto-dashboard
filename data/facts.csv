@@ -1,7 +1,7 @@
 section,metric,value,text,unit,as_of
 headline,price,2777.5,,JPY,2026-10-26
 headline,agent1_target,3076,,JPY,2026-10-30
-headline,agent2_target,3099,,JPY,2026-10-29
+headline,agent2_target,3099,,JPY,2026-10-30
 headline,agent3_target,3174,,JPY,2026-10-30
 headline,debate_target,3074,,JPY,2026-10-20
 headline,analyst_target,3349,,JPY,2026-10-26

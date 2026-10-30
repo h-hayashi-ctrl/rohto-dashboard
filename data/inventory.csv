@@ -6,6 +6,7 @@ Market snapshot,data/market_snapshot.json,72,2020-11 → 2026-10,"yfinance, seco
 "Google Trends (brands, symptoms)",data/alt/google_trends.csv,3132,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2,2026-10-26,ok
 Google Trends (share of search),data/alt/google_trends_share.csv,3654,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2 · Agent 3,2026-10-26,ok
 Visitors to Japan,data/alt/jnto_visitors.csv,570,2003-01 → 2026-09,JNTO monthly statistics,Agent 2 (reference only),2026-10-26,ok
+Cosmetics exports to China + HK,data/alt/cosmetics_exports.csv,204,2021-01 → 2026-08 · HS 3304,"UN Comtrade (Japan customs, in USD)",Agent 2 · Agent 3 (reference only),2026-10-30,ok
 "UV index, Tokyo",data/alt/uv_index.csv,66,2021-04 → 2026-09,Open-Meteo,Agent 2,2026-10-26,ok
 Rakuten bestseller ranking,data/alt/rakuten_ranking.csv,60,"Eye drops, lotion · top 30",Rakuten Ichiba ranking,Agent 2 · Agent 3 (reference),2026-10-20,last fetch failed (403)
 TDnet disclosures,data/competitor/disclosures.csv,57,"Rohto + 7 peers, last 180 days","TDnet via yanoshin WebAPI, primary",Agent 3,2026-10-30,ok

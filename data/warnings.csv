@@ -110,34 +110,36 @@ id,agent,level,code,message,ref
 109,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.1 / 日本の売上に占めるインバウンドの割合。会社の開示がないため仮置き（決算説明資料で要確認）,model.inbound_share_of_japan
 110,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.5 / インバウンド購買に占める中国客の割合。仮置き,model.china_weight_in_inbound
 111,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.2 / 売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き,model.incremental_op_margin
-112,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.3 / Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す,confidence.base
-113,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する,confidence.step
-114,Agent 2,warning,FETCH_FAILED,rakuten: HTTPError: HTTP Error 403: Error,rakuten
-115,Agent 2,info,INBOUND_REFERENCE_ONLY,インバウンドは参考表示のみ（前年比 -22.3%）。予想の計算には入れていない,
-116,Agent 2,info,UNVALIDATED_MODEL,弾性値は仮置きで、過去の日本セグメント売上との関係はまだ検証していない（四半期データがたまったら回帰で確認）,
-117,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 180 / 2四半期分。直近の決算期の業績予想の修正を少なくとも1回は含める,disclosures.lookback_days
-118,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 売上成長率の差 2%pt。決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,scorecard.revenue_growth_gap
-119,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 営業利益率の差 2%pt,scorecard.op_margin_gap
-120,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 1.0 / 検索シェアの前年同期からの変化（カテゴリ平均）1%pt。Googleトレンドの丸め誤差より大きい変化だけを数える,scorecard.search_share_change_pt
-121,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 2.0 / 棚のフェイスシェアの、最初と最後の訪問の差 2%pt（同じ店・同じカテゴリ）,scorecard.shelf_share_change_pt
-122,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 5.0 / 欠品率の差 5%pt（ロートが競合NBより低ければ +1）,scorecard.stockout_gap_pt
-123,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3 / シラバス Session 5「同じ場所を少なくとも3回」。これ未満の店・カテゴリは点数に入れない,scorecard.min_visits
-124,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 1点あたり競合倍率の ±2%。検証していない仮置き,valuation.premium_per_point
-125,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / 上限 ±6%。公開情報だけで大きな差をつけない,valuation.max_premium
-126,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / Agent 2 と同じ幅（方向がそろえば +0.05、ばらばらなら −0.05）,confidence.step
-127,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3.0 / 差 3%pt。広告販促費の定義の違いと決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,marketing.ap_efficiency_gap_pt
-128,Agent 3,info,CALENDAR_MISMATCH,12月決算の競合は予想の期間がロート（3月決算）と約3か月ずれる。差が小さいときは方向を断定しない,
-129,Agent 3,info,SHARED_WITH_AGENT2,検索シェアは Agent 2 と同じデータ。Agent 3 は倍率の判断にだけ使い、EPS の修正には使わない（二重計上しない）,
-130,Agent 3,warning,DIRECTION_UNKNOWN,ロート製薬 2026-08-06「業績予想の修正に関するお知らせ」の上方・下方が不明。disclosures.csv の direction に up / down / mixed を書く（本人が確認）,1271478
-131,Agent 3,info,COMPETITOR_EVENT,参天製薬 2026-10-16「当社連結子会社の破産手続開始申立てに関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
-132,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-10-09「希望退職施策「特別ライフチャレンジ」の結果に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
-133,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「連結子会社及び孫会社の吸収合併に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
-134,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「希望退職施策「特別ライフチャレンジ」の実施に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
-135,Agent 3,info,COMPETITOR_EVENT,小林製薬 2026-08-06「連結子会社(特定子会社)の異動を伴う持分譲渡に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
-136,Agent 3,info,COMPETITOR_EVENT,資生堂 2026-05-12「台湾資生堂　新竹工場の閉鎖に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
-137,Agent 3,warning,INORGANIC_GROWTH,"ロートの買収「Thann Oryza Co., Ltd. の株式取得完了に関するお知らせ」（2026-05-29）：売上成長率と販促の効率の差に買収の分が入っている可能性。既存事業だけの成長率で比べ直すか本人が判断する",1256478
-138,Agent 3,warning,NO_FIELD_DATA,店頭観測データがまだない（field/test_observations.csv）。競合との比較は公開情報だけで、同じ条件での比較になっていない（シラバス 5.4）,
-139,Agent 3,info,NO_AD_SPEND,有報に広告販促費のタグが無い会社（空欄のまま）: 資生堂,
-140,Agent 3,info,DEFINITION_DIFFERENCE,「広告宣伝費」と「販売促進費」の分け方は会社ごとに違う（参天は合計のみ）。合計（広告販促費）で比べる。12月決算の競合は期間が3か月ずれる,
-141,Agent 3,info,EC_SNAPSHOT,楽天のランキングは 2026-10-20 の1回分だけ（10日前、API が 403 で取れていない）。参考表示にとどめ、点数に入れない。価格は商品名から容量・入り数を読んだもの（読めない品目は除外）で、店のセット売り・送料込みの価格が混ざる,
-142,Agent 3,info,UNVALIDATED_MODEL,点数→倍率プレミアムの換算は検証していない仮置き。適用するかは議論と本人が決める,
+112,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: False / 中国の日本製化粧品への需要の参考表示。ロートは中国で現地生産しており（メンソレータム）、この輸出はロートの売上そのものではない。アジアの売上の予想にも使っていないので、予想の計算には入れない,model.use_china_exports
+113,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.3 / Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す,confidence.base
+114,Agent 2,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する,confidence.step
+115,Agent 2,warning,FETCH_FAILED,rakuten: HTTPError: HTTP Error 403: Error,rakuten
+116,Agent 2,info,CHINA_EXPORTS_REFERENCE_ONLY,中国・香港への化粧品の輸出は参考表示のみ（2026-08 まで、重量 +1.4%・金額 +5.7%）。ロートは中国で現地生産しており、この輸出はロートの売上そのものではない,
+117,Agent 2,info,INBOUND_REFERENCE_ONLY,インバウンドは参考表示のみ（前年比 -22.3%）。予想の計算には入れていない,
+118,Agent 2,info,UNVALIDATED_MODEL,弾性値は仮置きで、過去の日本セグメント売上との関係はまだ検証していない（四半期データがたまったら回帰で確認）,
+119,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 180 / 2四半期分。直近の決算期の業績予想の修正を少なくとも1回は含める,disclosures.lookback_days
+120,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 売上成長率の差 2%pt。決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,scorecard.revenue_growth_gap
+121,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 営業利益率の差 2%pt,scorecard.op_margin_gap
+122,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 1.0 / 検索シェアの前年同期からの変化（カテゴリ平均）1%pt。Googleトレンドの丸め誤差より大きい変化だけを数える,scorecard.search_share_change_pt
+123,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 2.0 / 棚のフェイスシェアの、最初と最後の訪問の差 2%pt（同じ店・同じカテゴリ）,scorecard.shelf_share_change_pt
+124,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 5.0 / 欠品率の差 5%pt（ロートが競合NBより低ければ +1）,scorecard.stockout_gap_pt
+125,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3 / シラバス Session 5「同じ場所を少なくとも3回」。これ未満の店・カテゴリは点数に入れない,scorecard.min_visits
+126,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.02 / 1点あたり競合倍率の ±2%。検証していない仮置き,valuation.premium_per_point
+127,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.06 / 上限 ±6%。公開情報だけで大きな差をつけない,valuation.max_premium
+128,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 0.05 / Agent 2 と同じ幅（方向がそろえば +0.05、ばらばらなら −0.05）,confidence.step
+129,Agent 3,warning,AGENT_ASSUMPTION,Agentの仮置き値（本人の判断が必要）: 3.0 / 差 3%pt。広告販促費の定義の違いと決算期のずれ（12月決算の競合）による誤差より大きい差だけを数える,marketing.ap_efficiency_gap_pt
+130,Agent 3,info,CALENDAR_MISMATCH,12月決算の競合は予想の期間がロート（3月決算）と約3か月ずれる。差が小さいときは方向を断定しない,
+131,Agent 3,info,SHARED_WITH_AGENT2,検索シェアは Agent 2 と同じデータ。Agent 3 は倍率の判断にだけ使い、EPS の修正には使わない（二重計上しない）,
+132,Agent 3,warning,DIRECTION_UNKNOWN,ロート製薬 2026-08-06「業績予想の修正に関するお知らせ」の上方・下方が不明。disclosures.csv の direction に up / down / mixed を書く（本人が確認）,1271478
+133,Agent 3,info,COMPETITOR_EVENT,参天製薬 2026-10-16「当社連結子会社の破産手続開始申立てに関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+134,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-10-09「希望退職施策「特別ライフチャレンジ」の結果に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+135,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「連結子会社及び孫会社の吸収合併に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
+136,Agent 3,info,COMPETITOR_EVENT,コーセー 2026-08-06「希望退職施策「特別ライフチャレンジ」の実施に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+137,Agent 3,info,COMPETITOR_EVENT,小林製薬 2026-08-06「連結子会社(特定子会社)の異動を伴う持分譲渡に関するお知らせ」：競争環境が変わるか本人が判断する,m_and_a
+138,Agent 3,info,COMPETITOR_EVENT,資生堂 2026-05-12「台湾資生堂　新竹工場の閉鎖に関するお知らせ」：競争環境が変わるか本人が判断する,restructuring
+139,Agent 3,warning,INORGANIC_GROWTH,"ロートの買収「Thann Oryza Co., Ltd. の株式取得完了に関するお知らせ」（2026-05-29）：売上成長率と販促の効率の差に買収の分が入っている可能性。既存事業だけの成長率で比べ直すか本人が判断する",1256478
+140,Agent 3,warning,NO_FIELD_DATA,店頭観測データがまだない（field/test_observations.csv）。競合との比較は公開情報だけで、同じ条件での比較になっていない（シラバス 5.4）,
+141,Agent 3,info,NO_AD_SPEND,有報に広告販促費のタグが無い会社（空欄のまま）: 資生堂,
+142,Agent 3,info,DEFINITION_DIFFERENCE,「広告宣伝費」と「販売促進費」の分け方は会社ごとに違う（参天は合計のみ）。合計（広告販促費）で比べる。12月決算の競合は期間が3か月ずれる,
+143,Agent 3,info,EC_SNAPSHOT,楽天のランキングは 2026-10-20 の1回分だけ（10日前、API が 403 で取れていない）。参考表示にとどめ、点数に入れない。価格は商品名から容量・入り数を読んだもの（読めない品目は除外）で、店のセット売り・送料込みの価格が混ざる,
+144,Agent 3,info,UNVALIDATED_MODEL,点数→倍率プレミアムの換算は検証していない仮置き。適用するかは議論と本人が決める,

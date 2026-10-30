@@ -36,6 +36,7 @@ Agent 2,model.elasticity_symptom,0.05,agent,症状の検索数・UVは需要の�
 Agent 2,model.inbound_share_of_japan,0.1,agent,日本の売上に占めるインバウンドの割合。会社の開示がないため仮置き（決算説明資料で要確認）
 Agent 2,model.china_weight_in_inbound,0.5,agent,インバウンド購買に占める中国客の割合。仮置き
 Agent 2,model.incremental_op_margin,0.2,agent,売上の増減分にかかる営業利益率。固定費があるため全社の営業利益率（約12%）より高いと仮置き
+Agent 2,model.use_china_exports,False,agent,中国の日本製化粧品への需要の参考表示。ロートは中国で現地生産しており（メンソレータム）、この輸出はロートの売上そのものではない。アジアの売上の予想にも使っていないので、予想の計算には入れない
 Agent 2,confidence.base,0.3,agent,Altデータを入れる前の確信度（2026-10-20 以前の assumptions.json の値）。提案は常にこの値からの増減で出す
 Agent 2,confidence.step,0.05,agent,シグナルの方向がそろえば確信度を+0.05、ばらばらなら−0.05と提案する
 Agent 3,disclosures.lookback_days,180,agent,2四半期分。直近の決算期の業績予想の修正を少なくとも1回は含める

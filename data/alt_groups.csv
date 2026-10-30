@@ -2,3 +2,4 @@ group,group_en,yoy,multiplier,contribution,used_in_forecast
 brand,Brand search,0.1224,0.1,0.0122,1
 symptom,Symptoms & weather,-0.0408,0.05,-0.002,1
 inbound,Inbound proxy,-0.2232,0.1,,0
+china_demand,China demand (reference),0.014,,,0

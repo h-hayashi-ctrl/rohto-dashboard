@@ -16,3 +16,5 @@ UV指数（東京・月平均）,UV index (Tokyo),symptom,Symptoms & weather,ope
 訪日客数（中国）,Visitors from China,inbound_detail,Inbound (detail),jnto,-0.5584,2026-04–2026-09
 訪日客数（中国以外）,Visitors excl. China,inbound_detail,Inbound (detail),jnto,0.1121,2026-04–2026-09
 インバウンド購買の代理（中国×0.5＋中国以外×0.50）,Inbound purchase proxy,inbound,Inbound proxy,jnto,-0.2232,2026-04–2026-09
+化粧品の輸出・中国＋香港（金額、米ドル）,Cosmetics exports to China + HK (USD value),china_demand,China demand (reference),un_comtrade,0.0571,2026-04–2026-08
+化粧品の輸出・中国＋香港（重量）,Cosmetics exports to China + HK (weight),china_demand,China demand (reference),un_comtrade,0.014,2026-04–2026-08

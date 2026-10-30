@@ -55,7 +55,7 @@ a { color: var(--s0); }
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -250,7 +250,7 @@ window.dash = (() => {
       <h2 class="rx-h2">How the agents work</h2>
       <p>The agents extract, calculate and flag problems. Final judgement on every assumption stays with me, and each value records who decided it (company disclosure, agent placeholder or student).</p>
       <div class="rx-flow">
-        <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data gathered</h4><ul><li>Earnings releases (tanshin) and EDINET filings</li><li>yfinance prices, consensus, analyst targets</li><li>Financials of listed peers</li><li>Google Trends, JNTO, UV index, Rakuten</li><li>TDnet disclosures, ad &amp; promotion spend of peers</li></ul></div>
+        <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data gathered</h4><ul><li>Earnings releases (tanshin) and EDINET filings</li><li>yfinance prices, consensus, analyst targets</li><li>Financials of listed peers</li><li>Google Trends, JNTO, UV index, Rakuten</li><li>TDnet disclosures, ad &amp; promotion spend of peers</li><li>Cosmetics exports to China (UN Comtrade)</li></ul></div>
         <div class="rx-step"><span class="rx-step-k">Agent 1</span><h4>Fundamentals</h4><p>Checks the data, forecasts FY2027/3–FY2028/3, values Rohto on its own multiples and on peer multiples, then blends the two into a target price.</p></div>
         <div class="rx-step"><span class="rx-step-k">Agent 2</span><h4>Alternative data</h4><p>Turns this year's search, weather and tourism signals into a change in Japan revenue, EPS and target price, and suggests raising or lowering confidence. It does not set its own target.</p></div>
         <div class="rx-step"><span class="rx-step-k">Agent 3</span><h4>Competitor intelligence</h4><p>Compares Rohto with its peers on the same definitions, filed under the 3Cs and 4Ps, and proposes a premium or discount on Agent 1's peer multiple. It does not set its own target.</p></div>
@@ -374,6 +374,12 @@ window.dash = (() => {
           <p>JNTO. Visitors from China are down <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=訪日客数（中国）" data-fmt="spct" data-tone="sign">—</b> this fiscal year while all others are up <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=訪日客数（中国以外）" data-fmt="spct" data-tone="sign">—</b>.</p>
           <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>All visitors</span><span><i class="rx-sw" data-sw="1"></i>China</span></div>
           <div class="rx-chart" data-draw="jnto-chart" data-source="jnto"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Cosmetics exports to China + Hong Kong</h3>
+          <p>Japan's exports of beauty and skincare products (HS 3304), UN Comtrade, in USD. While Chinese visitors fell, exports by weight are <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=化粧品の輸出・中国＋香港（重量）" data-fmt="spct" data-tone="sign">—</b> this fiscal year (value <b data-draw="fact" data-source="alt_signals" data-field="yoy" data-where="name=化粧品の輸出・中国＋香港（金額、米ドル）" data-fmt="spct" data-tone="sign">—</b>). Shown for reference only: Rohto makes most of what it sells in China locally.</p>
+          <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>China</span><span><i class="rx-sw" data-sw="1"></i>Hong Kong</span></div>
+          <div class="rx-chart" data-draw="exports-chart" data-source="exports"></div>
         </div>
         <div class="rx-card">
           <h3>UV index, Tokyo</h3>
@@ -991,7 +997,7 @@ dash.draw('yoy-chart', (node) => {
   if (R.wait(node, ['alt_signals'])) return;
   node.replaceChildren();
   const col = (g) => (g === 'brand' ? R.C(0) : g === 'symptom' ? R.C(1) : 'var(--cds-chart-muted)');
-  const order = { brand: 0, symptom: 1, inbound_detail: 2, inbound: 3 };
+  const order = { brand: 0, symptom: 1, inbound_detail: 2, inbound: 3, china_demand: 4 };
   const items = R.rows('alt_signals').map((r) => ({ label: r.name_en, value: +r.yoy, color: col(r.group), g: r.group, win: r.window, src: r.source, gname: r.group_en }))
     .sort((a, b) => order[a.g] - order[b.g] || b.value - a.value);
   R.hbars(node, { items, fmt: R.F.spct, tickFmt: d3.format('.0%'), row: 26, tip: (d) => [{ name: d.gname, value: R.F.spct(d.value) }, { name: 'Window', value: d.win }, { name: 'Source', value: d.src }] });
@@ -1039,6 +1045,15 @@ dash.draw('jnto-chart', (node) => {
   const pts = (k) => (by.get(k) || []).map((r) => ({ x: R.month(r.month), y: +r.visitors }));
   R.lines(node, { h: 240, series: [{ name: 'All visitors', color: R.C(0), points: pts('総数') }, { name: 'China', color: R.C(1), points: pts('中国') }],
     yFmt: (v) => d3.format('.2~s')(v).replace('G', 'B'), tipVal: d3.format(','), zero: true });
+});
+
+dash.draw('exports-chart', (node) => {
+  if (R.wait(node, ['exports'])) return;
+  node.replaceChildren();
+  const by = d3.group(R.rows('exports'), (r) => r.partner_code);
+  const pts = (k) => (by.get(k) || []).map((r) => ({ x: R.month(r.month), y: +r.value_usd }));
+  R.lines(node, { h: 240, series: [{ name: 'China', color: R.C(0), points: pts('156') }, { name: 'Hong Kong', color: R.C(1), points: pts('344') }],
+    yFmt: (v) => '$' + d3.format('.2~s')(v).replace('G', 'B'), tipVal: (v) => '$' + d3.format('.3~s')(v).replace('G', 'B'), zero: true });
 });
 
 dash.draw('uv-chart', (node) => {
@@ -1246,6 +1261,7 @@ dash.draw('warn-body', (tb) => {
     <li><a href="data/framework.csv">framework.csv</a></li>
     <li><a href="data/ad_spend.csv">ad_spend.csv</a></li>
     <li><a href="data/competitor_events.csv">competitor_events.csv</a></li>
+    <li><a href="data/exports.csv">exports.csv</a></li>
   </ul>
 </footer>
 </main>
