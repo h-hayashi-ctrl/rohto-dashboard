@@ -55,7 +55,7 @@ a { color: var(--s0); }
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'mock_shelf', 'mock_summary'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -195,6 +195,10 @@ window.dash = (() => {
 .rx-fw-item b { font-weight: var(--cds-font-weight-medium); display: flex; justify-content: space-between; gap: 8px; }
 .rx-fw-item span { color: var(--color-fg-muted); }
 .rx-fw-item.waiting b, .rx-fw-item.waiting span { color: var(--color-fg-muted); opacity: .75; }
+.rx-mock { border: 2px dashed var(--color-warn); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.rx-mock-banner { display: flex; gap: 10px; align-items: flex-start; color: var(--color-warn); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.rx-mock-banner b { white-space: nowrap; border: 1px solid currentColor; border-radius: 4px; padding: 0 6px; font-weight: 700; letter-spacing: .06em; }
+.rx-mock .rx-tile-v::after { content: " MOCK"; font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-warn); letter-spacing: .06em; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -467,6 +471,26 @@ window.dash = (() => {
             <thead><tr><th>Date</th><th>Company</th><th>Type</th><th>Direction</th><th>Title</th></tr></thead>
             <tbody data-draw="events-body"></tbody>
           </table>
+        </div>
+      </div>
+    </section>
+    <section class="rx-sec" id="mock-preview" data-draw="mock-visible" data-source="mock_summary">
+      <h2 class="rx-h2">Preview: how store visits will work</h2>
+      <div class="rx-mock">
+        <div class="rx-mock-banner"><b>MOCK DATA</b><span>Every number in this box comes from an invented practice file (<code>field/mock_observations.csv</code>, <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=rows" data-fmt="int">—</span> rows, all labelled MOCK). Nothing here was observed. It is not part of the score, the target price, the debate or the seminar dashboard, and this box disappears once real store visits are recorded.</span></div>
+        <p class="rx-note">It shows what Agent 3 will compute from each visit: Rohto's share of shelf facings, stock-outs against peer brands, unit prices against peer brands and private label, assortment and promotion tags, and how store evidence unlocks a confidence change.</p>
+        <div class="rx-tiles">
+          <div class="rx-tile"><span class="rx-tile-l">Shelf share change</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=share_change_pt" data-fmt="sn2">—</span><span class="rx-tile-s">pt, first to last visit · rule: ±2pt</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Stock-out rate, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=stockout_rohto" data-fmt="pct">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=stockout_nb" data-fmt="pct">—</span></span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Unit price vs peer brands</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=price_index_nb" data-fmt="n2">—</span><span class="rx-tile-s">× · vs private label <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=price_index_pb" data-fmt="n2">—</span>×</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Rohto share of products</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=sku_share" data-fmt="pct0">—</span><span class="rx-tile-s">Assortment on the shelf</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">On promotion, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=promo_rohto" data-fmt="pct0">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=promo_nb" data-fmt="pct0">—</span></span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Confidence it would allow</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=confidence_suggested" data-fmt="n2">—</span><span class="rx-tile-s">from <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=confidence_current" data-fmt="n2">—</span>: store data lifts the cap</span></div>
+        </div>
+        <div class="rx-card">
+          <h3>Rohto's share of shelf facings, by store and visit (mock)</h3>
+          <p>Three visits per store and category, the minimum the rule needs before a change is scored.</p>
+          <div class="rx-mult" data-draw="mock-shelf" data-source="mock_shelf"></div>
         </div>
       </div>
     </section>
@@ -1169,6 +1193,27 @@ dash.draw('eff-chart', (node) => {
     tip: (d) => [{ name: 'Sales − A&P growth', value: R.F.spct(d.value) }, { name: 'Fiscal year', value: d.period }] });
 });
 
+// Mock preview: hidden when there is no mock data (real visits exist)
+dash.draw('mock-visible', (node) => {
+  if (R.st('mock_summary') !== 'ok') return;
+  if (!R.rows('mock_summary').length) node.hidden = true;
+});
+
+dash.draw('mock-shelf', (node) => {
+  if (R.wait(node, ['mock_shelf'])) return;
+  node.replaceChildren();
+  for (const [key, rs] of d3.groups(R.rows('mock_shelf'), (r) => r.location_en + ' · ' + r.category_en)) {
+    const card = R.el('div', 'rx-mini rx-card');
+    const head = R.el('div', 'rx-mini-h');
+    head.append(R.el('span', null, key), R.el('span', null, 'MOCK'));
+    const box = R.el('div', 'rx-chart rx-sm');
+    card.append(head, box);
+    node.append(card);
+    R.lines(box, { h: 120, series: [{ name: 'Rohto share (mock)', color: R.C(2), points: rs.map((r) => ({ x: R.month(r.date), y: +r.rohto_share })) }],
+      yFmt: d3.format('.0%'), yDomain: [0, 0.8], lastDot: true, tipVal: d3.format('.1%'), xFmt: d3.utcFormat('%b %-d') });
+  }
+});
+
 dash.draw('events-body', (tb) => {
   if (R.wait(tb, ['competitor_events'])) return;
   tb.replaceChildren(...R.rows('competitor_events').map((r) => {
@@ -1243,7 +1288,7 @@ dash.draw('warn-body', (tb) => {
 });
 </script>
 <footer class="rx-foot">
-  <p>Built from the Fukuhara seminar project. Agent 1 and Agent 2 run weekly; scripts/build_dashboard_data.py turns their outputs into the files below. Figures marked yfinance are secondary sources used for cross-checks only.</p>
+  <p>Built from the Fukuhara seminar project. Agents 1, 2 and 3 run weekly; scripts/build_dashboard_data.py turns their outputs into the files below. Figures marked yfinance are secondary sources used for cross-checks only.</p>
   <ul>
     <li><a href="data/facts.csv">facts.csv</a></li>
     <li><a href="data/financials.csv">financials.csv</a></li>

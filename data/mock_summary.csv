@@ -1,0 +1,13 @@
+metric,value,text
+rows,81,
+visits,18,
+share_change_pt,-1.19,0
+stockout_rohto,0.0741,
+stockout_nb,0.0556,0
+price_index_nb,0.864,
+price_index_pb,2.442,
+sku_share,0.3333,
+promo_rohto,0.074,
+promo_nb,0.056,
+confidence_current,0.25,
+confidence_suggested,0.3,

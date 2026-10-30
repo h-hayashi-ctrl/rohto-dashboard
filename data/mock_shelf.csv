@@ -1,0 +1,19 @@
+store_id,location_en,category_en,date,rohto_share
+M01,Matsukiyo · Inbound (Ginza),Lotion,2026-11-02,0.3571
+M01,Matsukiyo · Inbound (Ginza),Lotion,2026-11-06,0.3333
+M01,Matsukiyo · Inbound (Ginza),Lotion,2026-11-10,0.2857
+M01,Matsukiyo · Inbound (Ginza),Eye drops,2026-11-02,0.45
+M01,Matsukiyo · Inbound (Ginza),Eye drops,2026-11-06,0.4762
+M01,Matsukiyo · Inbound (Ginza),Eye drops,2026-11-10,0.5455
+M02,Matsukiyo · Residential,Lotion,2026-11-02,0.4286
+M02,Matsukiyo · Residential,Lotion,2026-11-06,0.4286
+M02,Matsukiyo · Residential,Lotion,2026-11-10,0.4
+M02,Matsukiyo · Residential,Eye drops,2026-11-02,0.4444
+M02,Matsukiyo · Residential,Eye drops,2026-11-06,0.4444
+M02,Matsukiyo · Residential,Eye drops,2026-11-10,0.4444
+W01,Welcia · Residential,Lotion,2026-11-02,0.3846
+W01,Welcia · Residential,Lotion,2026-11-06,0.3846
+W01,Welcia · Residential,Lotion,2026-11-10,0.3846
+W01,Welcia · Residential,Eye drops,2026-11-02,0.4
+W01,Welcia · Residential,Eye drops,2026-11-06,0.4
+W01,Welcia · Residential,Eye drops,2026-11-10,0.3333
