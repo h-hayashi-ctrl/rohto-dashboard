@@ -195,10 +195,10 @@ window.dash = (() => {
 .rx-fw-item b { font-weight: var(--cds-font-weight-medium); display: flex; justify-content: space-between; gap: 8px; }
 .rx-fw-item span { color: var(--color-fg-muted); }
 .rx-fw-item.waiting b, .rx-fw-item.waiting span { color: var(--color-fg-muted); opacity: .75; }
-.rx-mock { border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-md); }
-.rx-mock-banner { display: flex; gap: 10px; align-items: flex-start; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.5; }
-.rx-mock-banner b { white-space: nowrap; border: 1px solid currentColor; border-radius: 4px; padding: 0 6px; font-weight: 700; letter-spacing: .06em; }
-.rx-mock .rx-tile-v::after { content: " example"; font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rx-example { border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.rx-example-banner { display: flex; gap: 10px; align-items: flex-start; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.rx-example-banner b { white-space: nowrap; border: 1px solid currentColor; border-radius: 4px; padding: 0 6px; font-weight: 700; letter-spacing: .06em; }
+.rx-example .rx-tile-v::after { content: " example"; font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -476,8 +476,8 @@ window.dash = (() => {
     </section>
     <section class="rx-sec" id="example-preview" data-draw="example-visible" data-source="example_summary">
       <h2 class="rx-h2">Illustrative example: how Agent 3 will read store visits</h2>
-      <div class="rx-mock">
-        <div class="rx-mock-banner"><b>EXAMPLE</b><span>Example values, not observations. Store visits start in November; until then this section shows what Agent 3 will compute from each visit, using example values. It is not part of the score, the target price or the debate, and it is replaced by real results after the first recorded visit.</span></div>
+      <div class="rx-example">
+        <div class="rx-example-banner"><b>EXAMPLE</b><span>Example values, not observations. Store visits start in November; until then this section shows what Agent 3 will compute from each visit, using example values. It is not part of the score, the target price or the debate, and it is replaced by real results after the first recorded visit.</span></div>
         <p class="rx-note">For each visit: Rohto's share of shelf facings, stock-outs against peer brands, unit prices against peer brands and private label, assortment and promotion tags, and how store evidence unlocks a confidence change.</p>
         <div class="rx-tiles">
           <div class="rx-tile"><span class="rx-tile-l">Shelf share change</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=share_change_pt" data-fmt="sn2">—</span><span class="rx-tile-s">pt, first to last visit · rule: ±2pt</span></div>
@@ -1193,7 +1193,7 @@ dash.draw('eff-chart', (node) => {
     tip: (d) => [{ name: 'Sales − A&P growth', value: R.F.spct(d.value) }, { name: 'Fiscal year', value: d.period }] });
 });
 
-// Example preview (field/mock_observations.csv): hidden once real visits exist
+// Example preview: hidden once real visits exist
 dash.draw('example-visible', (node) => {
   if (R.st('example_summary') !== 'ok') return;
   if (!R.rows('example_summary').length) node.hidden = true;
