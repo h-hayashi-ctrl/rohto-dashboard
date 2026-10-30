@@ -55,7 +55,7 @@ a { color: var(--s0); }
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'mock_shelf', 'mock_summary'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -474,23 +474,23 @@ window.dash = (() => {
         </div>
       </div>
     </section>
-    <section class="rx-sec" id="mock-preview" data-draw="mock-visible" data-source="mock_summary">
+    <section class="rx-sec" id="example-preview" data-draw="example-visible" data-source="example_summary">
       <h2 class="rx-h2">Illustrative example: how Agent 3 will read store visits</h2>
       <div class="rx-mock">
         <div class="rx-mock-banner"><b>EXAMPLE</b><span>Example values, not observations. Store visits start in November; until then this section shows what Agent 3 will compute from each visit, using example values. It is not part of the score, the target price or the debate, and it is replaced by real results after the first recorded visit.</span></div>
         <p class="rx-note">For each visit: Rohto's share of shelf facings, stock-outs against peer brands, unit prices against peer brands and private label, assortment and promotion tags, and how store evidence unlocks a confidence change.</p>
         <div class="rx-tiles">
-          <div class="rx-tile"><span class="rx-tile-l">Shelf share change</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=share_change_pt" data-fmt="sn2">—</span><span class="rx-tile-s">pt, first to last visit · rule: ±2pt</span></div>
-          <div class="rx-tile"><span class="rx-tile-l">Stock-out rate, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=stockout_rohto" data-fmt="pct">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=stockout_nb" data-fmt="pct">—</span></span></div>
-          <div class="rx-tile"><span class="rx-tile-l">Unit price vs peer brands</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=price_index_nb" data-fmt="n2">—</span><span class="rx-tile-s">× · vs private label <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=price_index_pb" data-fmt="n2">—</span>×</span></div>
-          <div class="rx-tile"><span class="rx-tile-l">Rohto share of products</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=sku_share" data-fmt="pct0">—</span><span class="rx-tile-s">Assortment on the shelf</span></div>
-          <div class="rx-tile"><span class="rx-tile-l">On promotion, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=promo_rohto" data-fmt="pct0">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=promo_nb" data-fmt="pct0">—</span></span></div>
-          <div class="rx-tile"><span class="rx-tile-l">Confidence it would allow</span><span class="rx-tile-v" data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=confidence_suggested" data-fmt="n2">—</span><span class="rx-tile-s">from <span data-draw="fact" data-source="mock_summary" data-field="value" data-where="metric=confidence_current" data-fmt="n2">—</span>: store data lifts the cap</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Shelf share change</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=share_change_pt" data-fmt="sn2">—</span><span class="rx-tile-s">pt, first to last visit · rule: ±2pt</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Stock-out rate, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=stockout_rohto" data-fmt="pct">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=stockout_nb" data-fmt="pct">—</span></span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Unit price vs peer brands</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=price_index_nb" data-fmt="n2">—</span><span class="rx-tile-s">× · vs private label <span data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=price_index_pb" data-fmt="n2">—</span>×</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Rohto share of products</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=sku_share" data-fmt="pct0">—</span><span class="rx-tile-s">Assortment on the shelf</span></div>
+          <div class="rx-tile"><span class="rx-tile-l">On promotion, Rohto</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=promo_rohto" data-fmt="pct0">—</span><span class="rx-tile-s">vs peer brands <span data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=promo_nb" data-fmt="pct0">—</span></span></div>
+          <div class="rx-tile"><span class="rx-tile-l">Confidence it would allow</span><span class="rx-tile-v" data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=confidence_suggested" data-fmt="n2">—</span><span class="rx-tile-s">from <span data-draw="fact" data-source="example_summary" data-field="value" data-where="metric=confidence_current" data-fmt="n2">—</span>: store data lifts the cap</span></div>
         </div>
         <div class="rx-card">
           <h3>Rohto's share of shelf facings, by store and visit (example)</h3>
           <p>Three visits per store and category, the minimum the rule needs before a change is scored.</p>
-          <div class="rx-mult" data-draw="mock-shelf" data-source="mock_shelf"></div>
+          <div class="rx-mult" data-draw="example-shelf" data-source="example_shelf"></div>
         </div>
       </div>
     </section>
@@ -1194,15 +1194,15 @@ dash.draw('eff-chart', (node) => {
 });
 
 // Example preview (field/mock_observations.csv): hidden once real visits exist
-dash.draw('mock-visible', (node) => {
-  if (R.st('mock_summary') !== 'ok') return;
-  if (!R.rows('mock_summary').length) node.hidden = true;
+dash.draw('example-visible', (node) => {
+  if (R.st('example_summary') !== 'ok') return;
+  if (!R.rows('example_summary').length) node.hidden = true;
 });
 
-dash.draw('mock-shelf', (node) => {
-  if (R.wait(node, ['mock_shelf'])) return;
+dash.draw('example-shelf', (node) => {
+  if (R.wait(node, ['example_shelf'])) return;
   node.replaceChildren();
-  for (const [key, rs] of d3.groups(R.rows('mock_shelf'), (r) => r.location_en + ' · ' + r.category_en)) {
+  for (const [key, rs] of d3.groups(R.rows('example_shelf'), (r) => r.location_en + ' · ' + r.category_en)) {
     const card = R.el('div', 'rx-mini rx-card');
     const head = R.el('div', 'rx-mini-h');
     head.append(R.el('span', null, key), R.el('span', null, 'example'));
