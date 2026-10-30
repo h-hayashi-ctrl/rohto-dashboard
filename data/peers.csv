@@ -1,5 +1,5 @@
 ticker,name,name_en,included,pe_forward,ev_ebitda_forward,pbr,roe_forward,op_margin_forward,revenue_growth_forward,dividend_yield
-4527,ロート製薬,Rohto,self,17.83,9.62,2.08,0.1168,0.1209,0.0831,0.018
+4527,ロート製薬,Rohto,self,17.58,9.48,2.05,0.1168,0.1209,0.0831,0.0183
 4452,花王,Kao,yes,24.48,11.38,2.95,0.1206,0.1056,0.066,0.0214
 4912,ライオン,Lion,yes,19.93,7.23,1.54,0.0775,0.093,0.0187,0.0189
 4536,参天製薬,Santen,yes,13.38,8.55,1.78,0.133,0.1592,0.0664,0.0252

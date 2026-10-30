@@ -1,6 +1,6 @@
 frame,axis,item,evidence,use,score
-3C,Customer,Share-of-search change,"+1.43pt on average (Lotion +1.6pt, Sunscreen -1.9pt, Whitening / spots +0.8pt, Eye drops +5.2pt)",scored,1
-3C,Customer,Category demand,Symptom searches -4.1% YoY (Agent 2 uses this for EPS),reference,
+3C,Customer,Share-of-search change,"+1.56pt on average (Lotion +1.6pt, Sunscreen -1.6pt, Whitening / spots +1.2pt, Eye drops +5.1pt)",scored,1
+3C,Customer,Category demand,Symptom searches -3.3% YoY (Agent 2 uses this for EPS),reference,
 3C,Customer,China demand for Japanese cosmetics,"Japan's cosmetics exports to China + HK +1.4% by weight, fiscal year to date (UN Comtrade)",reference,
 3C,Competitor,Guidance revisions,Direction of Rohto's 2026-08-06 revision not confirmed yet,waiting,
 3C,Competitor,Competitor events,"6 events in 180 days: Santen restructuring, Kose restructuring, Kose M&A, Kose restructuring, Kobayashi M&A, Shiseido restructuring",reference,

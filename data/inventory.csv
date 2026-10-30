@@ -2,12 +2,12 @@ dataset,file,rows,coverage,source,used_by,updated,status
 Rohto financials,data/rohto_financials.csv,125,"FY2020/3 → FY2026/3, FY2027/3 1Q","Kessan tanshin (TDnet), primary",Agent 1,2026-10-20,ok
 EDINET XBRL extract,data/edinet_extracted.csv,85,Annual securities reports,"EDINET API, primary",Agent 1 (cross-check),2026-10-20,ok
 Peer financials,data/peers_financials.csv,151,7 peers,Kessan tanshin of each peer,Agent 1 (peers),2026-10-15,ok
-Market snapshot,data/market_snapshot.json,72,2020-11 → 2026-10,"yfinance, secondary",Agent 1 (cross-check),2026-10-26,ok
-"Google Trends (brands, symptoms)",data/alt/google_trends.csv,3132,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2,2026-10-26,ok
-Google Trends (share of search),data/alt/google_trends_share.csv,3654,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2 · Agent 3,2026-10-26,ok
-Visitors to Japan,data/alt/jnto_visitors.csv,570,2003-01 → 2026-09,JNTO monthly statistics,Agent 2 (reference only),2026-10-26,ok
+Market snapshot,data/market_snapshot.json,72,2020-11 → 2026-10,"yfinance, secondary",Agent 1 (cross-check),2026-10-30,ok
+"Google Trends (brands, symptoms)",data/alt/google_trends.csv,3132,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2,2026-10-30,ok
+Google Trends (share of search),data/alt/google_trends_share.csv,3654,2021-10-24 → 2026-10-18,Google Trends via pytrends,Agent 2 · Agent 3,2026-10-30,ok
+Visitors to Japan,data/alt/jnto_visitors.csv,570,2003-01 → 2026-09,JNTO monthly statistics,Agent 2 (reference only),2026-10-30,ok
 Cosmetics exports to China + HK,data/alt/cosmetics_exports.csv,204,2021-01 → 2026-08 · HS 3304,"UN Comtrade (Japan customs, in USD)",Agent 2 · Agent 3 (reference only),2026-10-30,ok
-"UV index, Tokyo",data/alt/uv_index.csv,66,2021-04 → 2026-09,Open-Meteo,Agent 2,2026-10-26,ok
+"UV index, Tokyo",data/alt/uv_index.csv,67,2021-04 → 2026-10,Open-Meteo,Agent 2,2026-10-30,ok
 Rakuten bestseller ranking,data/alt/rakuten_ranking.csv,180,"Eye drops, lotion · top 30",Rakuten Ichiba ranking,Agent 2 · Agent 3 (reference),,ok
 TDnet disclosures,data/competitor/disclosures.csv,57,"Rohto + 7 peers, last 180 days","TDnet via yanoshin WebAPI, primary",Agent 3,2026-10-30,ok
 Ad & promotion spend,data/competitor/ad_spend.csv,16,"Rohto + 7 peers, last 2 fiscal years","EDINET annual reports (XBRL), primary",Agent 3,2026-10-30,ok
