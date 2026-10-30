@@ -141,5 +141,4 @@ id,agent,level,code,message,ref
 140,Agent 3,info,NO_AD_SPEND,有報に広告販促費のタグが無い会社（空欄のまま）: 資生堂,
 141,Agent 3,info,DEFINITION_DIFFERENCE,「広告宣伝費」と「販売促進費」の分け方は会社ごとに違う（参天は合計のみ）。合計（広告販促費）で比べる。12月決算の競合は期間が3か月ずれる,
 142,Agent 3,info,EC_SNAPSHOT,楽天のランキングは 2026-10-30 の1回分だけ（0日前、API が 403 で取れていない）。参考表示にとどめ、点数に入れない。価格は商品名から容量・入り数を読んだもの（読めない品目は除外）で、店のセット売り・送料込みの価格が混ざる,
-143,Agent 3,warning,FRAMEWORK_GAP,Price（価格） の証拠がまだない（データ待ち）,Price（価格）
-144,Agent 3,info,UNVALIDATED_MODEL,点数→倍率プレミアムの換算は検証していない仮置き。適用するかは議論と本人が決める,
+143,Agent 3,info,UNVALIDATED_MODEL,点数→倍率プレミアムの換算は検証していない仮置き。適用するかは議論と本人が決める,
