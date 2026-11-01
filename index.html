@@ -55,7 +55,7 @@ a { color: var(--s0); }
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary', 'price_actions'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -199,6 +199,15 @@ window.dash = (() => {
 .rx-example-banner { display: flex; gap: 10px; align-items: flex-start; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.5; }
 .rx-example-banner b { white-space: nowrap; border: 1px solid currentColor; border-radius: 4px; padding: 0 6px; font-weight: 700; letter-spacing: .06em; }
 .rx-example .rx-tile-v::after { content: " example"; font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rx-sh-gain { background: var(--color-ok); opacity: .35; }
+.rx-sh-loss { background: var(--color-bad); opacity: .35; }
+.rx-num-k { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--color-fg); font-size: 10px; font-style: normal; color: var(--color-fg); }
+.rx-numc { fill: var(--color-panel); stroke: var(--color-fg); stroke-width: 1; }
+.rx-numt { font-size: 10px; fill: var(--color-fg); text-anchor: middle; }
+.rx-acts { margin: 0; padding-left: 1.6em; display: flex; flex-direction: column; gap: 6px; font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.rx-acts b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+.rx-acts .src { color: var(--color-fg-muted); }
+.rx-card > p b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -214,6 +223,7 @@ window.dash = (() => {
     <button class="rx-tab" role="tab" data-tab="agent1" aria-selected="false">Agent 1 · Fundamentals</button>
     <button class="rx-tab" role="tab" data-tab="agent2" aria-selected="false">Agent 2 · Alternative data</button>
     <button class="rx-tab" role="tab" data-tab="agent3" aria-selected="false">Agent 3 · Competitors</button>
+    <button class="rx-tab" role="tab" data-tab="history" aria-selected="false">Price &amp; demand history</button>
     <button class="rx-tab" role="tab" data-tab="debate" aria-selected="false">Debate</button>
     <button class="rx-tab" role="tab" data-tab="data-checks" aria-selected="false">Data &amp; checks</button>
   </nav>
@@ -496,6 +506,90 @@ window.dash = (() => {
     </section>
   </section>
 
+  <!-- ===================== PRICE & DEMAND HISTORY ===================== -->
+  <section class="rx-page" id="history" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">Price &amp; demand history</h2>
+      <p>Google search interest in Japan for Rohto's five main brands and for the symptoms they treat (<span data-draw="fact" data-source="demand_facts" data-field="text" data-where="metric=span" data-fmt="text">—</span>, monthly), with Rohto's price rises and key disclosures marked. Rohto does not publish monthly sales, so search interest stands in for demand. The question: when Rohto raises prices, does interest in its brands fall behind interest in the need itself?</p>
+      <div class="rx-tiles">
+        <div class="rx-tile"><span class="rx-tile-l">Brand search index, last 12 months</span><span class="rx-tile-v" data-draw="fact" data-source="demand_facts" data-field="value" data-where="metric=brand_lvl12" data-fmt="int">—</span><span class="rx-tile-s">First 12 months = 100</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Symptom search index, last 12 months</span><span class="rx-tile-v" data-draw="fact" data-source="demand_facts" data-field="value" data-where="metric=symptom_lvl12" data-fmt="int">—</span><span class="rx-tile-s">First 12 months = 100</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Brand minus symptoms, YoY</span><span class="rx-tile-v" data-draw="fact" data-source="demand_facts" data-field="value" data-where="metric=gap" data-fmt="spt" data-tone="sign">—</span><span class="rx-tile-s">12-month averages of YoY</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Regime changes</span><span class="rx-tile-v" data-draw="fact" data-source="demand_facts" data-field="value" data-where="metric=regime_changes" data-fmt="int">—</span><span class="rx-tile-s">12-month view, since <span data-draw="fact" data-source="demand_facts" data-field="text" data-where="metric=yoy12_from" data-fmt="text">—</span></span></div>
+      </div>
+    </section>
+
+    <div class="rx-card">
+      <h3>Brands vs symptoms: 12-month average of year-on-year change (%)</h3>
+      <div class="rx-legend">
+        <span><i class="rx-sw" data-sw="0"></i>Rohto brand searches</span>
+        <span><i class="rx-sw" data-sw="1"></i>Symptom searches</span>
+        <span><i class="rx-sw rx-sh-gain"></i>brand up / symptoms down</span>
+        <span><i class="rx-sw rx-sh-loss"></i>brand down / symptoms up</span>
+        <span><i class="rx-num-k">1</i>price actions and disclosures (list below)</span>
+      </div>
+      <div class="rx-chart" data-draw="hist-yoy-chart" data-source="demand_history demand_regimes price_actions"></div>
+      <p>Reading it (data to October 2026): from mid-2024 to mid-2025 both lines were below zero and close together (brand down / symptoms down), so the dip followed the category, not Rohto. From August 2025, the month of the first price rise, brand searches have grown faster than symptom searches, and they kept growing after the April 2026 Hada Labo rise. Search interest is not purchases: it cannot show whether shoppers paid the higher price, and advertising, new products and the hay-fever season also move it. The latest month is partial.</p>
+    </div>
+
+    <div class="rx-card">
+      <h3>Price actions and key disclosures</h3>
+      <ol class="rx-acts" data-draw="hist-actions" data-source="price_actions"></ol>
+      <p>Found by web search on 2026-11-02, plus Rohto's own TDnet disclosures. Not a complete list: Rohto does not publish a list of price revisions, and no announcement for eye drops was found. Dates are the first month of shipments at the new price, not the announcement.</p>
+    </div>
+
+    <div class="rx-grid">
+      <div class="rx-card">
+        <h3>Long-run level: search index</h3>
+        <p>Average of the last 12 monthly index values. Each term starts at 100 over its first 12 months (<span data-draw="fact" data-source="demand_facts" data-field="text" data-where="metric=base" data-fmt="text">—</span>).</p>
+        <div class="rx-legend"><span><i class="rx-sw" data-sw="0"></i>Rohto brands</span><span><i class="rx-sw" data-sw="1"></i>Symptoms</span></div>
+        <div class="rx-chart" data-draw="hist-level-chart" data-source="demand_history"></div>
+      </div>
+      <div class="rx-card">
+        <h3>How the index is calculated</h3>
+        <p><b>What Google publishes.</b> For each search term, a weekly score from 0 to 100, scaled to that term's own peak in the 5-year window. Scores of different terms cannot be added, because each has its own scale. We take the monthly mean of the weekly scores.</p>
+        <p><b>Starting point.</b> Each term's score is divided by its average over the first 12 months and multiplied by 100. The brand index is the simple average of the five brand terms; the symptom index the average of the seven symptom terms.</p>
+        <p><b>Year on year.</b> Index this month ÷ index in the same month a year earlier − 1. The chart above and the tiles use the average of the last 12 monthly figures, which removes most of the seasonality (hay fever in spring, sunscreen in summer).</p>
+        <p><b>Worked example, <span data-draw="fact" data-source="demand_facts" data-field="text" data-where="metric=latest" data-fmt="text">—</span>:</b></p>
+        <div class="rx-tablebox">
+          <table class="rx-table">
+            <thead><tr><th>Brand term</th><th class="n">Base</th><th class="n">Score</th><th class="n">Index</th><th class="n">Index a year earlier</th><th class="n">YoY</th></tr></thead>
+            <tbody data-draw="hist-example-body" data-source="demand_terms demand_history"></tbody>
+          </table>
+        </div>
+        <p><b>What it is not.</b> (1) Not a sales or price index: search shows interest, not purchases. (2) Google rescales the whole series at each download and rounds to whole numbers, so small terms (score below 10) are noisy. (3) Brand searches also rise with advertising and new products. Use the index for direction and turning points, not for exact levels.</p>
+      </div>
+    </div>
+
+    <div class="rx-grid">
+      <div class="rx-card">
+        <h3>Regimes (12-month averages)</h3>
+        <div class="rx-tablebox">
+          <table class="rx-table">
+            <thead><tr><th>Period</th><th>Regime</th></tr></thead>
+            <tbody data-draw="hist-regime-body" data-source="demand_regimes"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="rx-card">
+        <h3>By fiscal year: average monthly YoY</h3>
+        <div class="rx-tablebox">
+          <table class="rx-table">
+            <thead><tr><th>Fiscal year</th><th class="n">Brands</th><th class="n">Hada Labo</th><th class="n">Melano CC</th><th class="n">Skin Aqua</th><th class="n">Eye drops</th><th class="n">Alguard</th><th class="n">Symptoms</th><th class="n">Revenue</th></tr></thead>
+            <tbody data-draw="hist-fy-body" data-source="demand_terms demand_history financials"></tbody>
+          </table>
+        </div>
+        <p>Rohto's fiscal year runs April to March. Simple averages of the monthly YoY figures; the first and the latest year are part-years (months shown). Revenue is consolidated (Japan and overseas), from the financials.</p>
+      </div>
+    </div>
+
+    <div class="rx-card">
+      <h3>What comes next: the store visits</h3>
+      <p>Search history shows direction. It cannot show the shelf price shoppers paid, or whether Rohto's price gap to peer brands and private labels widened after each rise. That is the job of Agent 3's store visits, which record unit prices, facings and promotions item by item (see the illustrative example on the Agent 3 tab). There is no item-level price history to rebuild, so the comparison starts with the first real visit.</p>
+      <p class="rx-note">Sources: Google Trends via pytrends (Japan, weekly, monthly means); price actions from news (secondary) and TDnet (primary), each marked in the list. Derived figures only.</p>
+    </div>
+  </section>
+
   <!-- ===================== DEBATE ===================== -->
   <section class="rx-page" id="debate" role="tabpanel" hidden>
     <section class="rx-sec">
@@ -613,6 +707,7 @@ window.R = (() => {
     sn2: (v) => sign(v) + d3.format('.2f')(Math.abs(v)),
     sn0: (v) => sign(v) + d3.format('.0f')(Math.abs(v)),
     spct0: (v) => sign(v) + d3.format('.0%')(Math.abs(v)),
+    spt: (v) => sign(v) + d3.format('.1f')(Math.abs(v)) + ' pt',
   };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
   // Returns true (and draws the empty / failed state) when any source isn't ready.
@@ -1224,6 +1319,209 @@ dash.draw('events-body', (tb) => {
   }));
 });
 
+// Price & demand history
+const fmtMon = (m) => d3.utcFormat('%b %Y')(R.month(m));
+const monthsOf = (rows) => [...new Set(rows.map((r) => r.month))].sort();
+// Each term: score ÷ its first-12-month average × 100, and YoY against the same month a year earlier.
+dash.calc('demand_terms', {
+  title: 'Search index per term',
+  description: 'Monthly Google Trends score of each term, indexed to its first 12 months = 100, with year-on-year change.',
+  inputs: ['trends_monthly'],
+  fn: (tm) => {
+    const months = monthsOf(tm), base = new Set(months.slice(0, 12)), out = [];
+    for (const [term, rs] of d3.groups(tm, (r) => r.term)) {
+      const b = d3.mean(rs.filter((r) => base.has(r.month)), (r) => +r.value);
+      const byM = new Map(rs.map((r) => [r.month, +r.value]));
+      for (const r of rs) {
+        const i = months.indexOf(r.month), prev = i >= 12 ? byM.get(months[i - 12]) : null;
+        out.push({ term, term_en: r.term_en, group: r.group, month: r.month, value: +r.value, base: b, idx: (+r.value / b) * 100, yoy: prev ? +r.value / prev - 1 : null });
+      }
+    }
+    return out;
+  },
+});
+// Group index = simple average of the term indices; YoY and 12-month averages of both.
+dash.calc('demand_history', {
+  title: 'Brand and symptom search index',
+  description: 'Average term index per group, its YoY, and 12-month averages of the level and of the YoY.',
+  inputs: ['demand_terms'],
+  fn: (terms) => {
+    const months = monthsOf(terms), out = months.map((month) => ({ month }));
+    for (const g of ['brand', 'symptom']) {
+      const idx = months.map((m) => d3.mean(terms.filter((t) => t.group === g && t.month === m), (t) => t.idx));
+      const yoy = idx.map((v, i) => (i >= 12 ? v / idx[i - 12] - 1 : null));
+      out.forEach((r, i) => {
+        r[g + '_idx'] = idx[i];
+        r[g + '_yoy'] = yoy[i];
+        r[g + '_lvl12'] = i >= 11 ? d3.mean(idx.slice(i - 11, i + 1)) : null;
+        r[g + '_yoy12'] = i >= 23 ? d3.mean(yoy.slice(i - 11, i + 1)) : null;
+      });
+    }
+    return out;
+  },
+});
+const regimeOf = (r) => `brand ${r.brand_yoy12 >= 0 ? 'up' : 'down'} / symptoms ${r.symptom_yoy12 >= 0 ? 'up' : 'down'}`;
+dash.calc('demand_regimes', {
+  title: 'Regimes of the 12-month view',
+  description: 'Runs of months with the same sign of the 12-month average YoY for brands and for symptoms.',
+  inputs: ['demand_history'],
+  fn: (hist) => {
+    const rs = hist.filter((r) => r.brand_yoy12 != null), runs = [];
+    for (const r of rs) {
+      const s = regimeOf(r);
+      if (runs.length && runs[runs.length - 1].regime === s) runs[runs.length - 1].last = r.month;
+      else runs.push({ regime: s, from: r.month, last: r.month });
+    }
+    runs.forEach((r, i) => { r.to = i < runs.length - 1 ? runs[i + 1].from : r.last; });
+    return runs;
+  },
+});
+dash.calc('demand_facts', {
+  title: 'Search history headline figures',
+  description: 'Latest 12-month levels, the brand-minus-symptom YoY gap and the number of regime changes.',
+  inputs: ['demand_history', 'demand_regimes'],
+  fn: (hist, runs) => {
+    const last = hist[hist.length - 1], first12 = hist.find((r) => r.brand_yoy12 != null);
+    return [
+      { metric: 'brand_lvl12', value: last.brand_lvl12 },
+      { metric: 'symptom_lvl12', value: last.symptom_lvl12 },
+      { metric: 'gap', value: (last.brand_yoy12 - last.symptom_yoy12) * 100 },
+      { metric: 'regime_changes', value: runs.length - 1 },
+      { metric: 'yoy12_from', text: fmtMon(first12.month) },
+      { metric: 'latest', text: fmtMon(last.month) },
+      { metric: 'span', text: fmtMon(hist[0].month) + ' – ' + fmtMon(last.month) },
+      { metric: 'base', text: fmtMon(hist[0].month) + ' – ' + fmtMon(hist[11].month) },
+    ];
+  },
+});
+
+dash.draw('hist-yoy-chart', (node) => {
+  if (R.wait(node, ['demand_history', 'demand_regimes', 'price_actions'])) return;
+  node.replaceChildren();
+  const rs = R.rows('demand_history').filter((r) => r.brand_yoy12 != null);
+  const H = 280, top = 26, bottom = 22;
+  const { s, w } = R.svg(node, H);
+  const vals = rs.flatMap((r) => [r.brand_yoy12, r.symptom_yoy12]);
+  const y = d3.scaleLinear([Math.min(0, d3.min(vals)), Math.max(0, d3.max(vals))], [H - bottom, top]).nice(5);
+  const yf = (v) => d3.format('+.0%')(v).replace('+0%', '0%');
+  const ml = R.textW(s, y.ticks(5).map(yf)) + 8, mr = 10;
+  const x = d3.scaleUtc([R.month(rs[0].month), R.month(rs[rs.length - 1].month)], [ml, w - mr]);
+  for (const run of R.rows('demand_regimes')) {
+    const gain = run.regime === 'brand up / symptoms down', loss = run.regime === 'brand down / symptoms up';
+    if (!gain && !loss) continue;
+    s.append('rect').attr('x', x(R.month(run.from))).attr('width', Math.max(2, x(R.month(run.to)) - x(R.month(run.from))))
+      .attr('y', top).attr('height', H - bottom - top).attr('fill', gain ? 'var(--color-ok)' : 'var(--color-bad)').attr('opacity', 0.12);
+  }
+  s.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - mr).attr('y1', y).attr('y2', y);
+  s.append('g').selectAll('text').data(y.ticks(5)).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').text(yf);
+  s.append('line').attr('class', 'rx-ax').attr('x1', ml).attr('x2', w - mr).attr('y1', y(0)).attr('y2', y(0));
+  const xt = x.ticks(d3.utcMonth.every(w < 520 ? 12 : 6)).filter((d) => d.getUTCMonth() % 6 === 0);
+  s.append('g').selectAll('text').data(xt).join('text').attr('class', 'rx-tick')
+    .attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text((d) => (d.getUTCMonth() === 0 ? d3.utcFormat('%Y')(d) : d3.utcFormat('%b')(d)));
+  const series = [{ k: 'brand_yoy12', name: 'Rohto brands', color: R.C(0) }, { k: 'symptom_yoy12', name: 'Symptoms', color: R.C(1) }];
+  for (const d of series) {
+    s.append('path').attr('fill', 'none').attr('stroke', d.color).attr('stroke-width', 2).attr('stroke-linejoin', 'round')
+      .attr('d', d3.line().x((r) => x(R.month(r.month))).y((r) => y(r[d.k]))(rs));
+  }
+  // Numbered markers: number = position in the list below.
+  const acts = R.rows('price_actions').map((a, i) => ({ ...a, n: i + 1 }));
+  const lo = rs[0].month, hi = rs[rs.length - 1].month;
+  for (const a of acts.filter((a) => a.month >= lo && a.month <= hi)) {
+    const ax = x(R.month(a.month));
+    s.append('line').attr('class', 'rx-ref').attr('x1', ax).attr('x2', ax).attr('y1', top - 4).attr('y2', H - bottom);
+    s.append('circle').attr('class', 'rx-numc').attr('cx', ax).attr('cy', 12).attr('r', 8);
+    s.append('text').attr('class', 'rx-numt').attr('x', ax).attr('y', 15.5).text(a.n);
+  }
+  // Hover
+  const t = R.tip(node), rule = s.append('line').attr('class', 'rx-ax').attr('y1', top).attr('y2', H - bottom).attr('visibility', 'hidden');
+  const xs = rs.map((r) => +R.month(r.month));
+  s.append('rect').attr('x', ml).attr('y', 0).attr('width', Math.max(0, w - mr - ml)).attr('height', H - bottom).attr('fill', 'transparent')
+    .on('pointermove', (ev) => {
+      const [mx, my] = d3.pointer(ev), r = rs[d3.bisectCenter(xs, +x.invert(mx))];
+      rule.attr('x1', x(R.month(r.month))).attr('x2', x(R.month(r.month))).attr('visibility', 'visible');
+      const lines = series.map((d) => ({ color: d.color, name: d.name, value: R.F.spct(r[d.k]) }));
+      lines.push({ name: regimeOf(r), value: '' });
+      for (const a of acts.filter((a) => a.month === r.month)) lines.push({ name: `${a.n}. ${a.kind === 'up' ? 'Price rise' : 'Disclosure'}`, value: '' });
+      t.show(x(R.month(r.month)), my, fmtMon(r.month), lines);
+    })
+    .on('pointerleave', () => { t.hide(); rule.attr('visibility', 'hidden'); });
+});
+
+dash.draw('hist-actions', (ol) => {
+  if (R.wait(ol, ['price_actions'], false)) return;
+  ol.replaceChildren(...R.rows('price_actions').map((a) => {
+    const li = R.el('li');
+    li.append(R.el('b', null, `${a.month} ${a.kind === 'up' ? '▲' : a.kind === 'down' ? '▼' : '•'} `), a.title_en + ' ');
+    const src = R.el('span', 'src', '(');
+    const link = R.el('a', null, a.source); link.href = a.url; link.target = '_blank'; link.rel = 'noopener';
+    src.append(link, `; ${a.source_type}${a.announced && !a.source.includes(a.announced) ? '; announced ' + a.announced : ''})`);
+    li.append(src);
+    return li;
+  }));
+});
+
+dash.draw('hist-level-chart', (node) => {
+  if (R.wait(node, ['demand_history'])) return;
+  node.replaceChildren();
+  const rs = R.rows('demand_history').filter((r) => r.brand_lvl12 != null);
+  R.lines(node, {
+    series: [
+      { name: 'Brands', color: R.C(0), points: rs.map((r) => ({ x: R.month(r.month), y: r.brand_lvl12 })) },
+      { name: 'Symptoms', color: R.C(1), points: rs.map((r) => ({ x: R.month(r.month), y: r.symptom_lvl12 })) },
+    ],
+    yFmt: d3.format('.0f'), endLabels: true, refs: [{ y: 100, label: 'Base' }],
+  });
+});
+
+const pctCell = (v) => { const td = R.el('td', 'n' + (v == null ? '' : v > 0 ? ' rx-up' : v < 0 ? ' rx-down' : ''), v == null ? '—' : R.F.spct(v)); return td; };
+dash.draw('hist-example-body', (tb) => {
+  if (R.wait(tb, ['demand_terms', 'demand_history'])) return;
+  const terms = R.rows('demand_terms'), months = monthsOf(terms), m = months[months.length - 1], m0 = months[months.length - 13];
+  const brand = terms.filter((t) => t.group === 'brand' && t.month === m);
+  const prev = new Map(terms.filter((t) => t.month === m0).map((t) => [t.term, t]));
+  const f1 = d3.format('.1f');
+  const rowsOut = brand.map((t) => {
+    const tr = R.el('tr');
+    tr.append(R.el('td', null, t.term_en), R.el('td', 'n', f1(t.base)), R.el('td', 'n', f1(t.value)), R.el('td', 'n', f1(t.idx)), R.el('td', 'n', f1(prev.get(t.term).idx)), pctCell(t.idx / prev.get(t.term).idx - 1));
+    return tr;
+  });
+  const h = R.rows('demand_history'), last = h[h.length - 1], yr = h[h.length - 13];
+  const tot = R.el('tr', 'rx-self');
+  tot.append(R.el('td', null, 'Brand index (average)'), R.el('td', 'n', ''), R.el('td', 'n', ''), R.el('td', 'n', f1(last.brand_idx)), R.el('td', 'n', f1(yr.brand_idx)), pctCell(last.brand_yoy));
+  tb.replaceChildren(...rowsOut, tot);
+});
+
+dash.draw('hist-regime-body', (tb) => {
+  if (R.wait(tb, ['demand_regimes'])) return;
+  tb.replaceChildren(...R.rows('demand_regimes').map((r) => {
+    const tr = R.el('tr');
+    const c = r.regime === 'brand up / symptoms down' ? 'rx-up' : r.regime === 'brand down / symptoms up' ? 'rx-down' : null;
+    tr.append(R.el('td', null, `${r.from} → ${r.to}`), R.el('td', c, r.regime));
+    return tr;
+  }));
+});
+
+const fyOf = (m) => { const [y, mo] = m.split('-').map(Number); return `FY${mo >= 4 ? y + 1 : y}/3`; };
+dash.draw('hist-fy-body', (tb) => {
+  if (R.wait(tb, ['demand_terms', 'demand_history', 'financials'])) return;
+  const terms = R.rows('demand_terms').filter((t) => t.yoy != null);
+  const hist = R.rows('demand_history').filter((r) => r.brand_yoy != null);
+  const fin = R.rows('financials').filter((r) => r.kind === 'actual');
+  const rev = new Map(fin.map((r) => [r.period, +r.revenue]));
+  const prevFy = (fy) => fy.replace(/\d{4}/, (y) => +y - 1);
+  const cols = ['Hada Labo', 'Melano CC', 'Skin Aqua', 'Rohto eye drops', 'Alguard'];
+  tb.replaceChildren(...d3.groups(hist, (r) => fyOf(r.month)).map(([fy, ms]) => {
+    const tr = R.el('tr');
+    const inFy = terms.filter((t) => fyOf(t.month) === fy);
+    tr.append(R.el('td', null, fy + (ms.length < 12 ? ` (${ms.length} m)` : '')), pctCell(d3.mean(ms, (r) => r.brand_yoy)));
+    for (const c of cols) tr.append(pctCell(d3.mean(inFy.filter((t) => t.term_en === c), (t) => t.yoy) ?? null));
+    tr.append(pctCell(d3.mean(ms, (r) => r.symptom_yoy)));
+    const r1 = rev.get(fy), r0 = rev.get(prevFy(fy));
+    tr.append(pctCell(r1 && r0 ? r1 / r0 - 1 : null));
+    return tr;
+  }));
+});
+
 // Data & checks
 dash.draw('inv-body', (tb) => {
   if (R.wait(tb, ['inventory'])) return;
@@ -1312,6 +1610,7 @@ dash.draw('warn-body', (tb) => {
     <li><a href="data/ad_spend.csv">ad_spend.csv</a></li>
     <li><a href="data/competitor_events.csv">competitor_events.csv</a></li>
     <li><a href="data/exports.csv">exports.csv</a></li>
+    <li><a href="data/price_actions.csv">price_actions.csv</a></li>
   </ul>
 </footer>
 </main>

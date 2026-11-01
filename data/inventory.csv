@@ -11,4 +11,5 @@ Cosmetics exports to China + HK,data/alt/cosmetics_exports.csv,204,2021-01 → 2
 Rakuten bestseller ranking,data/alt/rakuten_ranking.csv,180,"Eye drops, lotion · top 30",Rakuten Ichiba ranking,Agent 2 · Agent 3 (reference),,ok
 TDnet disclosures,data/competitor/disclosures.csv,57,"Rohto + 7 peers, last 180 days","TDnet via yanoshin WebAPI, primary",Agent 3,2026-10-30,ok
 Ad & promotion spend,data/competitor/ad_spend.csv,16,"Rohto + 7 peers, last 2 fiscal years","EDINET annual reports (XBRL), primary",Agent 3,2026-10-30,ok
+Price actions and key disclosures,data/history/price_actions.csv,4,2025-08 → 2026-10,News search + TDnet (each row marked primary / secondary),Demand history tab,2026-11-02,ok
 Store shelf observations,field/test_observations.csv,0,Protocol ready,Own field survey,"Agent 3 (shelf share, stock-outs, 4P)",,not started
