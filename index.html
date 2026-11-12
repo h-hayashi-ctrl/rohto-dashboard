@@ -49,13 +49,14 @@ a { color: var(--s0); }
 .rx-foot ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
 // Minimal stand-in for the dashboard runtime: loads the CSVs in data/ and
 // runs each registered drawing when data arrives, the width changes or a tab opens.
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary', 'price_actions'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary', 'price_actions', 'regional'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -218,6 +219,19 @@ window.dash = (() => {
 .rx-card > p b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.rx-reg-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--cds-gap-sm); }
+.rx-reg-head select, .rx-reg-pickers select { font: inherit; font-size: var(--cds-font-size-caption); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 4px 6px; max-width: 100%; }
+.rx-reg-pickers { display: inline-flex; flex-wrap: wrap; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.rx-reg-pickers label { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+.rx-reg-map-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 12rem; gap: var(--cds-gap-md); align-items: start; }
+@media (max-width: 640px) { .rx-reg-map-wrap { grid-template-columns: minmax(0, 1fr); } }
+.rx-reg-map { min-height: 300px; }
+.rx-reg-rank { font-size: var(--cds-font-size-caption); display: grid; gap: 4px; }
+.rx-reg-rank-h { color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 6px; }
+.rx-reg-rank ol { margin: 0; padding-left: 1.4em; display: grid; gap: 2px; }
+.rx-reg-rank li span { margin-right: 6px; }
+.rx-reg-rank li b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; float: right; }
+#reg-links tbody tr:hover td { background: var(--color-bg); }
 </style>
 
 <div class="rx">
@@ -232,6 +246,7 @@ window.dash = (() => {
     <button class="rx-tab" role="tab" data-tab="agent2" aria-selected="false">Agent 2 · Alternative data</button>
     <button class="rx-tab" role="tab" data-tab="agent3" aria-selected="false">Agent 3 · Competitors</button>
     <button class="rx-tab" role="tab" data-tab="history" aria-selected="false">Price &amp; demand history</button>
+    <button class="rx-tab" role="tab" data-tab="regions" aria-selected="false">Regions</button>
     <button class="rx-tab" role="tab" data-tab="debate" aria-selected="false">Debate</button>
     <button class="rx-tab" role="tab" data-tab="data-checks" aria-selected="false">Data &amp; checks</button>
   </nav>
@@ -599,6 +614,47 @@ window.dash = (() => {
   </section>
 
   <!-- ===================== DEBATE ===================== -->
+  <section class="rx-page" id="regions" role="tabpanel" hidden>
+    <section class="rx-sec">
+      <h2 class="rx-h2">Regions</h2>
+      <p>Rohto does not publish sales by prefecture, and drugstore chains do not publish sales by brand and area. So this tab maps public stand-ins for regional demand: how much each prefecture searches for Rohto's brands and for the symptoms they treat, Rohto's share of searches against its competitors, and, once the e-Stat data is added, drugstore density, how common symptoms are and household spending on medicine. None of these is Rohto's sales.</p>
+    </section>
+
+    <div class="rx-card" id="reg-map-card">
+      <div class="rx-reg-head">
+        <h3 id="reg-map-title">Map</h3>
+        <select id="reg-layer" aria-label="Map layer"></select>
+      </div>
+      <p id="reg-map-note" class="rx-note"></p>
+      <div class="rx-reg-map-wrap">
+        <div class="rx-chart rx-reg-map" data-draw="reg-map" data-source="regional"></div>
+        <div class="rx-reg-rank" data-draw="reg-rank" data-source="regional"></div>
+      </div>
+    </div>
+
+    <div class="rx-card" id="reg-scatter-card">
+      <div class="rx-reg-head">
+        <h3>Do two layers move together across prefectures?</h3>
+        <span class="rx-reg-pickers">
+          <label>X <select id="reg-x" aria-label="X axis layer"></select></label>
+          <label>Y <select id="reg-y" aria-label="Y axis layer"></select></label>
+        </span>
+      </div>
+      <div class="rx-chart" data-draw="reg-scatter" data-source="regional"></div>
+      <p class="rx-note" id="reg-scatter-note"></p>
+    </div>
+
+    <div class="rx-card" id="reg-links-card">
+      <h3>Strongest links between a Rohto layer and a need layer</h3>
+      <p>Each Rohto layer (brand searches and Rohto's share of searches) against each need layer (symptom searches and, once added, symptom rates, drugstores and medicine spending), across the 47 prefectures. Pearson r; with 47 prefectures, |r| above about 0.29 is unlikely to be chance alone (p &lt; 0.05). Click a row to plot it above.</p>
+      <div class="rx-tablebox"><table class="rx-table" id="reg-links">
+        <thead><tr><th>Rohto layer</th><th>Need layer</th><th class="n">r</th><th class="n">Spearman ρ</th></tr></thead>
+        <tbody data-draw="reg-links" data-source="regional"></tbody>
+      </table></div>
+      <p class="rx-note">Reading it: a correlation across prefectures says where two things are both high, not that one causes the other. Urban prefectures search more for everything, older ones report more symptoms, and Google Trends is noisier in small prefectures. Map: 地球地図日本 (Geospatial Information Authority of Japan), via dataofjapan/land.</p>
+    </div>
+  </section>
+
   <section class="rx-page" id="debate" role="tabpanel" hidden>
     <section class="rx-sec">
       <h2 class="rx-h2">Agent 1 vs Agent 2</h2>
@@ -1593,10 +1649,194 @@ dash.draw('warn-body', (tb) => {
     }));
 });
 </script>
+<script>
+// Regions: map, scatter and strongest links (data/regional.csv + data/japan.topojson)
+(() => {
+  const REG = {};
+  REG.topo = d3.json('data/japan.topojson').then((t) => { REG.features = topojson.feature(t, t.objects.japan).features; dash.draw('reg-map'); });
+  // One entry per layer: {id, name, kind, unit, source, asOf, byPref: Map(code -> value)}
+  const layers = () => {
+    if (REG.cache && REG.cacheRows === R.rows('regional')) return REG.cache;
+    const m = new Map();
+    for (const r of R.rows('regional')) {
+      if (!m.has(r.layer)) m.set(r.layer, { id: r.layer, name: r.layer_en, kind: r.kind, unit: r.unit, source: r.source, asOf: r.as_of, byPref: new Map(), names: new Map() });
+      const v = R.num(r.value);
+      if (v != null) m.get(r.layer).byPref.set(+r.pref_code, v);
+      m.get(r.layer).names.set(+r.pref_code, r.pref_en);
+    }
+    REG.cacheRows = R.rows('regional'); REG.cache = [...m.values()];
+    return REG.cache;
+  };
+  const KIND = { brand: 'Rohto brand searches', share: 'Rohto share of searches', symptom: 'Symptom searches',
+    drugstore: 'Drugstores', health: 'Symptom rates (survey)', spending: 'Household medicine spending', population: 'Population' };
+  const ROHTO = ['brand', 'share'];
+  const isShare = (L) => L.unit.startsWith('share');
+  const fmt = (L, v) => (v == null ? '—' : isShare(L) ? d3.format('.0%')(v) : L.unit.startsWith('index') ? d3.format('.0f')(v) : d3.format(',.3~r')(v));
+  const byId = (id) => layers().find((L) => L.id === id);
+
+  // Fill the three pickers once the data is in
+  const fill = (sel, want) => {
+    if (sel.options.length) return;
+    const groups = d3.group(layers(), (L) => L.kind);
+    for (const [k, Ls] of groups) {
+      const g = document.createElement('optgroup'); g.label = KIND[k] || k;
+      for (const L of Ls) { const o = document.createElement('option'); o.value = L.id; o.textContent = L.name; g.append(o); }
+      sel.append(g);
+    }
+    if (want && byId(want)) sel.value = want;
+  };
+  const pick = () => {
+    fill(document.getElementById('reg-layer'), 'share:目薬');
+    fill(document.getElementById('reg-x'), 'trends:花粉症');
+    fill(document.getElementById('reg-y'), 'trends:アルガード');
+  };
+  ['reg-layer', 'reg-x', 'reg-y'].forEach((id) => document.getElementById(id).addEventListener('change', () => {
+    dash.draw('reg-map'); dash.draw('reg-rank'); dash.draw('reg-scatter');
+  }));
+
+  // Pearson r and Spearman rho over the prefectures both layers have
+  const pairs = (A, B) => [...A.byPref].filter(([k]) => B.byPref.has(k)).map(([k, a]) => ({ k, x: a, y: B.byPref.get(k) }));
+  const pearson = (P) => {
+    const n = P.length; if (n < 3) return null;
+    const mx = d3.mean(P, (p) => p.x), my = d3.mean(P, (p) => p.y);
+    let sxy = 0, sxx = 0, syy = 0;
+    for (const p of P) { sxy += (p.x - mx) * (p.y - my); sxx += (p.x - mx) ** 2; syy += (p.y - my) ** 2; }
+    return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
+  };
+  const ranks = (vals) => { const s = vals.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]); const r = new Array(vals.length);
+    for (let i = 0; i < s.length;) { let j = i; while (j + 1 < s.length && s[j + 1][0] === s[i][0]) j++; for (let t = i; t <= j; t++) r[s[t][1]] = (i + j) / 2 + 1; i = j + 1; } return r; };
+  const spearman = (P) => { const rx = ranks(P.map((p) => p.x)), ry = ranks(P.map((p) => p.y)); return pearson(P.map((p, i) => ({ x: rx[i], y: ry[i] }))); };
+
+  dash.draw('reg-map', (box) => {
+    if (R.wait(box, ['regional'])) return;
+    pick();
+    if (!REG.features) { box.classList.add('dash-skeleton'); return; }
+    const L = byId(document.getElementById('reg-layer').value) || layers()[0];
+    document.getElementById('reg-map-title').textContent = L.name;
+    document.getElementById('reg-map-note').textContent = `${L.unit} · ${L.source} · as of ${L.asOf}. Darker = higher. Okinawa is in the box at the top left; outlying islands are cut off.`;
+    box.replaceChildren();
+    const W = Math.max(280, box.clientWidth), H = Math.min(Math.round(W * 0.95), 600);
+    const s = d3.select(box).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
+      .style('overflow', 'hidden').attr('role', 'img').attr('aria-label', `Map of Japan: ${L.name} by prefecture`);
+    // Fit to the four main islands (lon 129–146, lat 31–45.6) and the main Okinawa island; outlying islands are clipped
+    const bbox = (x0, y0, x1, y1) => ({ type: 'Polygon', coordinates: [[[x0, y0], [x0, y1], [x1, y1], [x1, y0], [x0, y0]]] });
+    const main = REG.features.filter((f) => f.properties.id !== 47), oki = REG.features.filter((f) => f.properties.id === 47);
+    const proj = d3.geoMercator().fitExtent([[8, 8], [W - 8, H - 8]], bbox(129, 31, 146, 45.6));
+    const bw = Math.min(150, W * 0.24), bh = bw * 0.7;
+    const proj2 = d3.geoMercator().fitExtent([[14, 22], [8 + bw - 6, 8 + bh - 6]], bbox(127.6, 26.05, 128.35, 26.9));
+    const vals = [...L.byPref.values()];
+    const c = d3.scaleLinear().domain(d3.extent(vals)).range([0.08, 1]);
+    const t = R.tip(box);
+    const paint = (sel, path) => sel.join('path').attr('d', path)
+      .style('fill', (f) => (L.byPref.has(f.properties.id) ? 'var(--s0)' : 'var(--cds-chart-muted)'))
+      .style('fill-opacity', (f) => (L.byPref.has(f.properties.id) ? c(L.byPref.get(f.properties.id)) : 0.25))
+      .style('stroke', 'var(--color-panel)').style('stroke-width', 0.6)
+      .on('pointerenter pointermove', (ev, f) => {
+        const [x, y] = d3.pointer(ev, box);
+        const id = f.properties.id, v = L.byPref.get(id);
+        const rank = v == null ? null : vals.filter((u) => u > v).length + 1;
+        t.show(x, y, L.names.get(id) || f.properties.nam, [{ name: L.name, value: fmt(L, v) }, ...(rank ? [{ name: 'Rank', value: `${rank} of ${vals.length}` }] : [])]);
+      })
+      .on('pointerleave', () => t.hide());
+    paint(s.append('g').selectAll('path').data(main), d3.geoPath(proj));
+    s.append('rect').attr('x', 8).attr('y', 8).attr('width', bw).attr('height', bh).attr('rx', 4)
+      .style('fill', 'none').style('stroke', 'var(--color-border-line)');
+    const okiG = s.append('g');
+    okiG.append('clipPath').attr('id', 'reg-oki-clip').append('rect').attr('x', 8).attr('y', 8).attr('width', bw).attr('height', bh);
+    paint(okiG.append('g').attr('clip-path', 'url(#reg-oki-clip)').selectAll('path').data(oki), d3.geoPath(proj2));
+    s.append('text').attr('class', 'rx-tick').attr('x', 14).attr('y', 20).text('Okinawa');
+    // Legend
+    const lg = s.append('g').attr('transform', `translate(${W - 168},${H - 34})`);
+    const gid = 'reg-grad';
+    const gr = s.append('defs').append('linearGradient').attr('id', gid);
+    gr.append('stop').attr('offset', '0%').style('stop-color', 'var(--s0)').style('stop-opacity', 0.08);
+    gr.append('stop').attr('offset', '100%').style('stop-color', 'var(--s0)').style('stop-opacity', 1);
+    lg.append('rect').attr('width', 150).attr('height', 8).attr('rx', 2).style('fill', `url(#${gid})`);
+    const [lo, hi] = d3.extent(vals);
+    lg.append('text').attr('class', 'rx-tick').attr('y', 22).text(fmt(L, lo));
+    lg.append('text').attr('class', 'rx-tick').attr('x', 150).attr('y', 22).attr('text-anchor', 'end').text(fmt(L, hi));
+  });
+
+  dash.draw('reg-rank', (box) => {
+    if (R.wait(box, ['regional'], false)) return;
+    pick();
+    const L = byId(document.getElementById('reg-layer').value) || layers()[0];
+    const sorted = [...L.byPref].sort((a, b) => b[1] - a[1]);
+    box.replaceChildren();
+    for (const [title, part] of [['Highest', sorted.slice(0, 5)], ['Lowest', sorted.slice(-5).reverse()]]) {
+      box.append(R.el('div', 'rx-reg-rank-h', title));
+      const ol = R.el('ol');
+      for (const [k, v] of part) { const li = R.el('li'); li.append(R.el('span', null, L.names.get(k)), R.el('b', null, fmt(L, v))); ol.append(li); }
+      box.append(ol);
+    }
+  });
+
+  dash.draw('reg-scatter', (box) => {
+    if (R.wait(box, ['regional'])) return;
+    pick();
+    const X = byId(document.getElementById('reg-x').value), Y = byId(document.getElementById('reg-y').value);
+    box.replaceChildren();
+    if (!X || !Y) return;
+    const P = pairs(X, Y);
+    const r = pearson(P), rho = spearman(P);
+    const H = 340, ml = 44, mr = 16, mt = 12, mb = 40;
+    const W = Math.max(280, box.clientWidth);
+    const s = d3.select(box).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('role', 'img').attr('aria-label', `${Y.name} against ${X.name} across ${P.length} prefectures, r = ${r == null ? 'n/a' : r.toFixed(2)}`);
+    const x = d3.scaleLinear().domain(d3.extent(P, (p) => p.x)).nice().range([ml, W - mr]);
+    const y = d3.scaleLinear().domain(d3.extent(P, (p) => p.y)).nice().range([H - mb, mt]);
+    s.append('g').selectAll('line').data(y.ticks(5)).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', W - mr).attr('y1', y).attr('y2', y);
+    s.append('g').selectAll('text').data(y.ticks(5)).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end').text((v) => fmt(Y, v));
+    s.append('g').selectAll('text').data(x.ticks(6)).join('text').attr('class', 'rx-tick').attr('x', x).attr('y', H - mb + 16).attr('text-anchor', 'middle').text((v) => fmt(X, v));
+    s.append('line').attr('class', 'rx-ax').attr('x1', ml).attr('x2', W - mr).attr('y1', H - mb).attr('y2', H - mb);
+    s.append('text').attr('class', 'rx-tick').attr('x', W - mr).attr('y', H - 4).attr('text-anchor', 'end').text(`${X.name} →`);
+    s.append('text').attr('class', 'rx-tick').attr('x', ml).attr('y', mt - 2).text(`↑ ${Y.name}`);
+    // least-squares line
+    if (r != null) {
+      const mx = d3.mean(P, (p) => p.x), my = d3.mean(P, (p) => p.y);
+      const b = d3.sum(P, (p) => (p.x - mx) * (p.y - my)) / d3.sum(P, (p) => (p.x - mx) ** 2), a = my - b * mx;
+      const [x0, x1] = x.domain();
+      s.append('line').attr('class', 'rx-ref').attr('x1', x(x0)).attr('y1', y(a + b * x0)).attr('x2', x(x1)).attr('y2', y(a + b * x1)).style('clip-path', 'none');
+    }
+    const t = R.tip(box);
+    s.append('g').selectAll('circle').data(P).join('circle').attr('cx', (p) => x(p.x)).attr('cy', (p) => y(p.y)).attr('r', 4.5)
+      .style('fill', 'var(--s0)').style('fill-opacity', 0.75).style('stroke', 'var(--color-panel)')
+      .on('pointerenter', (ev, p) => { const [px, py] = d3.pointer(ev, box); t.show(px, py, X.names.get(p.k), [{ name: X.name, value: fmt(X, p.x) }, { name: Y.name, value: fmt(Y, p.y) }]); })
+      .on('pointerleave', () => t.hide());
+    const strength = (v) => (Math.abs(v) >= 0.6 ? 'strong' : Math.abs(v) >= 0.3 ? 'moderate' : 'weak');
+    document.getElementById('reg-scatter-note').textContent = r == null ? 'Not enough prefectures with both values.'
+      : `Pearson r = ${r.toFixed(2)} (${strength(r)}, ${r > 0 ? 'positive' : 'negative'}), Spearman ρ = ${rho.toFixed(2)}, ${P.length} prefectures. Each dot is a prefecture; the dashed line is the least-squares fit. Point at a dot for its name.`;
+  });
+
+  dash.draw('reg-links', (tb) => {
+    if (R.wait(tb, ['regional'], false)) return;
+    const Ls = layers();
+    const out = [];
+    for (const A of Ls.filter((L) => ROHTO.includes(L.kind)))
+      for (const B of Ls.filter((L) => !ROHTO.includes(L.kind) && L.kind !== 'population')) {
+        const P = pairs(A, B); const r = pearson(P);
+        if (r != null) out.push({ A, B, r, rho: spearman(P), n: P.length });
+      }
+    out.sort((p, q) => Math.abs(q.r) - Math.abs(p.r));
+    tb.replaceChildren(...out.slice(0, 12).map((o) => {
+      const tr = R.el('tr'); tr.style.cursor = 'pointer';
+      tr.append(R.el('td', null, o.A.name), R.el('td', null, `${o.B.name} (${KIND[o.B.kind] || o.B.kind})`),
+        R.el('td', 'n', R.F.sn2(o.r)), R.el('td', 'n', R.F.sn2(o.rho)));
+      tr.addEventListener('click', () => {
+        document.getElementById('reg-x').value = o.B.id; document.getElementById('reg-y').value = o.A.id;
+        dash.draw('reg-scatter'); document.getElementById('reg-scatter-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return tr;
+    }));
+  });
+})();
+</script>
 <footer class="rx-foot">
   <p>Built from the Fukuhara seminar project. Agents 1, 2 and 3 run weekly; scripts/build_dashboard_data.py turns their outputs into the files below. Figures marked yfinance are secondary sources used for cross-checks only.</p>
   <ul>
     <li><a href="data/facts.csv">facts.csv</a></li>
+    <li><a href="data/regional.csv">regional.csv</a></li>
+    <li><a href="data/japan.topojson">japan.topojson</a> (地球地図日本)</li>
     <li><a href="data/financials.csv">financials.csv</a></li>
     <li><a href="data/targets.csv">targets.csv</a></li>
     <li><a href="data/peers.csv">peers.csv</a></li>
