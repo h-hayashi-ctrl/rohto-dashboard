@@ -1,0 +1,170 @@
+[
+ {
+  "id": "root",
+  "parent": "",
+  "label": "Bracket Nowcaster",
+  "kind": "agent",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "s1",
+  "parent": "root",
+  "label": "1 · Screen markets",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "fetch_target_markets",
+  "parent": "s1",
+  "label": "fetch_target_markets",
+  "kind": "platform",
+  "does": "Lists the markets the agent may trade",
+  "used_by": "both"
+ },
+ {
+  "id": "fetch_market_detail",
+  "parent": "s1",
+  "label": "fetch_market_detail",
+  "kind": "platform",
+  "does": "Gets one market's prices, volume, rules",
+  "used_by": "both"
+ },
+ {
+  "id": "market_health",
+  "parent": "s1",
+  "label": "market_health",
+  "kind": "tool",
+  "does": "Normalises prices; tradable? untouched? days left",
+  "used_by": "both"
+ },
+ {
+  "id": "s2",
+  "parent": "root",
+  "label": "2 · Read the labels",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "parse_outcome_brackets",
+  "parent": "s2",
+  "label": "parse_outcome_brackets",
+  "kind": "tool",
+  "does": "Turns labels into numeric/date/joint/binary intervals",
+  "used_by": "both"
+ },
+ {
+  "id": "s3",
+  "parent": "root",
+  "label": "3 · Forecast → probabilities",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "forecast_to_bracket_probs",
+  "parent": "s3",
+  "label": "forecast_to_bracket_probs",
+  "kind": "tool",
+  "does": "Numeric forecast ± sd → bracket probs (Student-t)",
+  "used_by": "none"
+ },
+ {
+  "id": "joint_forecast_to_bracket_probs",
+  "parent": "s3",
+  "label": "joint_forecast_to_bracket_probs",
+  "kind": "tool",
+  "does": "Two-variable brackets (bivariate normal)",
+  "used_by": "none"
+ },
+ {
+  "id": "hazard_bracket_probs",
+  "parent": "s3",
+  "label": "hazard_bracket_probs",
+  "kind": "tool",
+  "does": "\"When will X happen\" date brackets from a rate",
+  "used_by": "hormuz"
+ },
+ {
+  "id": "threshold_probability",
+  "parent": "s3",
+  "label": "threshold_probability",
+  "kind": "tool",
+  "does": "YES/NO vs a threshold",
+  "used_by": "spacex"
+ },
+ {
+  "id": "s4",
+  "parent": "root",
+  "label": "4 · Blend with the market",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "pool_with_market",
+  "parent": "s4",
+  "label": "pool_with_market",
+  "kind": "tool",
+  "does": "Weights market price by volume vs b, model by confidence",
+  "used_by": "both"
+ },
+ {
+  "id": "s5",
+  "parent": "root",
+  "label": "5 · Size the trade",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "lmsr_kelly_trade",
+  "parent": "s5",
+  "label": "lmsr_kelly_trade",
+  "kind": "tool",
+  "does": "Exact LMSR cost + quarter-Kelly; buy / sell / hold",
+  "used_by": "both"
+ },
+ {
+  "id": "s6",
+  "parent": "root",
+  "label": "6 · Confirm the quote",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "calc_lmsr_cost",
+  "parent": "s6",
+  "label": "calc_lmsr_cost",
+  "kind": "platform",
+  "does": "Platform's own cost quote",
+  "used_by": "both"
+ },
+ {
+  "id": "verify_cost_and_finalize",
+  "parent": "s6",
+  "label": "verify_cost_and_finalize",
+  "kind": "tool",
+  "does": "Checks quote vs plan; resizes or blocks",
+  "used_by": "both"
+ },
+ {
+  "id": "s7",
+  "parent": "root",
+  "label": "7 · Portfolio & limits",
+  "kind": "step",
+  "does": "",
+  "used_by": ""
+ },
+ {
+  "id": "allocate_budget",
+  "parent": "s7",
+  "label": "allocate_budget",
+  "kind": "tool",
+  "does": "Ranks candidates; daily trade and theme caps",
+  "used_by": "both"
+ }
+]

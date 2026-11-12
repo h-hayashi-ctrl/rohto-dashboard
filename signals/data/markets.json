@@ -1,0 +1,112 @@
+[
+ {
+  "market": "無印の11月、一番伸びるのは服、生活雑貨、それとも食品？",
+  "address": "0xb56d685a72f8fac16946c607043f32ea2ceb9b7f",
+  "volume_sigs": 0.0,
+  "days_left": 17.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "秋の転職市場、増えるのは求人？それとも転職したい人？",
+  "address": "0x67d9d11c0df8b836ed11f1db63c041b2f52cf742",
+  "volume_sigs": 0.0,
+  "days_left": 17.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "節約するならどこで外食？客数の伸びで勝つ業態は？",
+  "address": "0x31890c6aca6be40de2ba4c8c9b723abdcda01db2",
+  "volume_sigs": 0.0,
+  "days_left": 17.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "秋の訪日旅行、伸び率でトップになるのは？",
+  "address": "0xf6999743dbd483a3f8e03b66d60976b3add0e49e",
+  "volume_sigs": 0.0,
+  "days_left": 4.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "AI向け半導体、巨大化してもまだ伸びる？NVIDIAの次の決算",
+  "address": "0x0267a79bb52617f0372f2cae7d0b6b2ab6a07a08",
+  "volume_sigs": 0.0,
+  "days_left": 4.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "冬服を買う人は増える？ユニクロ11月の客数と客単価",
+  "address": "0x3ebde9e3bf90c0dddcec5860b7a4352d16c0a4f6",
+  "volume_sigs": 0.0,
+  "days_left": 17.9,
+  "outcomes": 4,
+  "top_price_pct": 25.0,
+  "untouched": "yes",
+  "agent_traded": "no"
+ },
+ {
+  "market": "When will the first unescorted commercial vessel complete a full transit of the Strait of Hormuz on pre-conflict terms?",
+  "address": "0xbcdc897969711bb55160567e42db4218aedddeb8",
+  "volume_sigs": 15.1,
+  "days_left": 63.9,
+  "outcomes": 4,
+  "top_price_pct": 35.5,
+  "untouched": "no",
+  "agent_traded": "yes"
+ },
+ {
+  "market": "Will the KOSPI outperform the Nikkei 225 between November 5, 2026 and January 15, 2027?",
+  "address": "0x01d7cb9f12a5129945f6a25f9ec399589f0748f4",
+  "volume_sigs": 8.3,
+  "days_left": 63.2,
+  "outcomes": 2,
+  "top_price_pct": 54.0,
+  "untouched": "no",
+  "agent_traded": "no"
+ },
+ {
+  "market": "Will the AI forecaster outperform the average Japan-Korea student team in the live forecasting challenge from September 27, 2026?",
+  "address": "0x02d25e2a4d94ace7ebbe1b268cd530a5b54c60b6",
+  "volume_sigs": 242.2,
+  "days_left": 84.9,
+  "outcomes": 2,
+  "top_price_pct": 83.9,
+  "untouched": "no",
+  "agent_traded": "no"
+ },
+ {
+  "market": "Will Japanese visitor arrivals to South Korea grow faster year-on-year than South Korean visitor arrivals to Japan in October 2026?",
+  "address": "0xa56a8c042e3cd05687107b40cdc77b79ca02b565",
+  "volume_sigs": 349.4,
+  "days_left": 79.9,
+  "outcomes": 2,
+  "top_price_pct": 56.9,
+  "untouched": "no",
+  "agent_traded": "no"
+ },
+ {
+  "market": "Will SpaceX Top $3T by Dec 31, 2026?",
+  "address": "0x4b8523dfb55ddedb656ac1c993c4a6fa00acb9bf",
+  "volume_sigs": 1431.0,
+  "days_left": 48.9,
+  "outcomes": 2,
+  "top_price_pct": 73.9,
+  "untouched": "no",
+  "agent_traded": "yes"
+ }
+]

@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bracket Nowcaster Report</title>
+<meta name="description" content="How the Signals prediction-market agent (Bracket Nowcaster) has traded: spend, trades, sizing and the markets it may trade.">
+<style>
+:root {
+  --color-bg: #faf9f6; --color-fg: #1b1b19; --color-fg-muted: #6b6a65; --color-panel: #ffffff;
+  --color-border-line: #e3e1dc; --cds-border: #d6d4ce;
+  --color-ok: #2f8a5b; --color-warn: #b8741a; --color-bad: #c63d3d;
+  --cds-text-secondary: #6b6a65; --cds-chart-muted: #b5b3ad; --cds-chart-reference: #3b7dd8;
+  --cds-chart-grid: #ecebe7; --cds-chart-axis: #9a9893;
+  --cds-surface-popover: #ffffff; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12);
+  --font-anthropic-serif: Georgia, "Times New Roman", serif;
+  --font-anthropic-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-xl: 40px;
+  --cds-pad-md: 12px; --cds-pad-lg: 16px; --cds-radius: 10px;
+  --cds-font-size-caption: 0.8125rem; --cds-font-size-body: 1rem; --cds-font-size-heading: 1.3rem; --cds-font-size-title: 2.1rem;
+  --cds-font-weight-medium: 600;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #191917; --color-fg: #ecebe6; --color-fg-muted: #a3a19a; --color-panel: #22221f;
+    --color-border-line: #36352f; --cds-border: #45443e;
+    --color-ok: #5cc28d; --color-warn: #e0a447; --color-bad: #ef6b6b;
+    --cds-text-secondary: #a3a19a; --cds-chart-muted: #6b6a65; --cds-chart-reference: #6ea4ef;
+    --cds-chart-grid: #2c2b27; --cds-chart-axis: #77756f;
+    --cds-surface-popover: #2a2a26; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+}
+body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
+.site { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; box-sizing: border-box; }
+.site-nav { font-size: var(--cds-font-size-caption); margin-bottom: 20px; }
+.site a { color: var(--cds-chart-reference); }
+.site-sources { margin-top: 48px; border-top: 1px solid var(--color-border-line); padding-top: 16px; font-size: var(--cds-font-size-caption); }
+.site-sources h2 { font-size: var(--cds-font-size-body); margin: 0 0 8px; }
+.site-sources ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; line-height: 1.5; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="dash-shim.js"></script>
+</head>
+<body>
+<main class="site">
+  <nav class="site-nav"><a href="../">← Rohto 4527 dashboard</a></nav>
+<style>
+.bn { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1100px; }
+.bn h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.bn h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+.bn h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.bn p { margin: 0; line-height: 1.55; max-width: 72ch; }
+.bn-head { display: grid; gap: var(--cds-gap-sm); }
+.bn-muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.bn-sec { display: grid; gap: var(--cds-gap-md); min-width: 0; }
+.bn code, .bn-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+.bn-num { font-variant-numeric: tabular-nums; }
+.bn-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
+.bn-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.bn-tile .bn-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 1.9rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.bn-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.bn-findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--cds-gap-md); }
+.bn-finding { border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+.bn-pill { display: inline-block; width: fit-content; font-size: var(--cds-font-size-caption); padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.bn-pill.bad { color: var(--color-bad); }
+.bn-pill.warn { color: var(--color-warn); }
+.bn-pill.ok { color: var(--color-ok); }
+.bn-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--cds-gap-md); }
+.bn-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-md); align-content: start; min-width: 0; }
+.bn-kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--cds-gap-sm); }
+.bn-kv div { display: grid; gap: 2px; }
+.bn-kv b { font-variant-numeric: tabular-nums; font-weight: var(--cds-font-weight-medium); }
+.bn-reason { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.bn-prob svg text { fill: var(--cds-text-secondary); font-size: 11px; }
+.bn-scroll { overflow-x: auto; }
+.bn table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); }
+.bn th, .bn td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.bn th { color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); white-space: nowrap; }
+.bn td.n, .bn th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bn-tree-wrap { position: relative; overflow-x: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); }
+.bn-tree { position: relative; min-width: 700px; min-height: 480px; }
+.bn-tree svg text { fill: var(--color-fg); font-size: 12px; }
+.bn-tree .step text { font-weight: 600; }
+.bn-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bn-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.bn-sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.bn-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 8px 10px; font-size: var(--cds-font-size-caption); max-width: 260px; z-index: 2; }
+.bn details { border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-md); }
+.bn summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.bn details ul { margin: var(--cds-gap-sm) 0 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 80ch; line-height: 1.5; }
+[data-dash-source-state=refreshing] { opacity: .5; }
+</style>
+
+<div class="bn">
+  <header class="bn-head" id="top">
+    <h1>Bracket Nowcaster: first two trades</h1>
+    <p>The Signals agent <code>signals_agent_submission</code> has spent <b data-draw="v" data-source="totals" data-field="spent" data-row="0" data-fmt=".3f">—</b> SIGS on <b data-draw="v" data-source="account" data-field="trades" data-row="0" data-fmt="d">—</b> trades. Both bet against the market favourite. Both were also sized as if the market had no trading volume, which traces back to a bug in how the agent reads market data.</p>
+    <p class="bn-muted">Snapshot of the Signals Automatic Trading page, My Positions and the public market list, taken 13 Nov 2026. Times are as shown on Signals.</p>
+  </header>
+
+  <section class="bn-sec" id="summary">
+    <h2>Account</h2>
+    <div class="bn-tiles">
+      <div class="bn-tile" id="tile-spent"><span class="bn-label">Spent</span><span class="bn-big" data-draw="v" data-source="totals" data-field="spent" data-row="0" data-fmt=".3f">—</span><span class="bn-muted">SIGS, of a <span data-draw="v" data-source="account" data-field="budget_points" data-row="0" data-fmt="d">—</span>-Point budget</span></div>
+      <div class="bn-tile" id="tile-value"><span class="bn-label">Positions worth now</span><span class="bn-big" data-draw="v" data-source="totals" data-field="value_now" data-row="0" data-fmt=".3f">—</span><span class="bn-muted"><span data-draw="pnl" data-source="totals" data-field="unrealised" data-row="0">—</span> SIGS vs cost, at current prices</span></div>
+      <div class="bn-tile" id="tile-balance"><span class="bn-label">Balance</span><span class="bn-big" data-draw="v" data-source="account" data-field="balance_points" data-row="0" data-fmt=".2f">—</span><span class="bn-muted">Points available</span></div>
+      <div class="bn-tile" id="tile-trades"><span class="bn-label">Trades</span><span class="bn-big" data-draw="v" data-source="account" data-field="trades" data-row="0" data-fmt="d">—</span><span class="bn-muted">limit <span data-draw="v" data-source="account" data-field="trades_per_day" data-row="0" data-fmt="d">—</span> per day</span></div>
+      <div class="bn-tile" id="tile-untouched"><span class="bn-label">Markets never traded</span><span class="bn-big" data-draw="v" data-source="mkt_summary" data-field="untouched" data-row="0" data-fmt="d">—</span><span class="bn-muted">of <span data-draw="v" data-source="mkt_summary" data-field="applied" data-row="0" data-fmt="d">—</span> the agent may trade</span></div>
+      <div class="bn-tile" id="tile-expiry"><span class="bn-label">Settings expire</span><span class="bn-big" style="font-size:1.25rem" data-draw="v" data-source="account" data-field="settings_expire" data-row="0">—</span><span class="bn-muted">agent stops after this</span></div>
+    </div>
+  </section>
+
+  <section class="bn-sec" id="findings">
+    <h2>What the decisions show</h2>
+    <div class="bn-findings">
+      <div class="bn-finding" id="finding-volume">
+        <span class="bn-pill bad">Bug</span>
+        <h3>The agent reads every market as untraded</h3>
+        <p>Both trade logs say "vol 0 SIGS, weight 0". SpaceX actually has <b data-draw="v" data-source="sizing" data-field="volume_actual_sigs" data-where="trade=spacex" data-fmt=",.0f">—</b> SIGS of volume, the most on the platform. With the real volume the market price would have carried <b data-draw="v" data-source="sizing" data-field="weight_actual_pct" data-where="trade=spacex" data-fmt=".0f">—</b>% weight, and the planned spend falls from <b data-draw="v" data-source="sizing" data-field="cost_seen_sigs" data-where="trade=spacex" data-fmt=".3f">—</b> to <b data-draw="v" data-source="sizing" data-field="cost_actual_sigs" data-where="trade=spacex" data-fmt=".3f">—</b> SIGS. The direction (buy NO) stays the same.</p>
+        <p class="bn-muted">Cause: <code>market_health</code> looks for <code>volume</code> and <code>deadline</code> keys that the platform's <code>fetch_market_detail</code> evidently names differently.</p>
+      </div>
+      <div class="bn-finding" id="finding-deadline">
+        <span class="bn-pill bad">Bug</span>
+        <h3>Deadlines are missing too</h3>
+        <p>The Hormuz log says market data "reported no deadline". That switches off the rule against opening positions within 6 hours of the close. The agent also gave the missing deadline as one reason for skipping the other markets.</p>
+      </div>
+      <div class="bn-finding" id="finding-limits">
+        <span class="bn-pill warn">Limits</span>
+        <h3>The daily limit decides which trades happen</h3>
+        <p>On 13 Nov the allocator chose several trades worth 0.495 SIGS, but only one could go out under the limit of <b data-draw="v" data-source="account" data-field="trades_per_day" data-row="0" data-fmt="d">—</b> trade per day. <b data-draw="v" data-source="mkt_summary" data-field="untouched" data-row="0" data-fmt="d">—</b> applied markets have no trades at all. The settings end on <span data-draw="v" data-source="account" data-field="settings_expire" data-row="0">—</span>.</p>
+      </div>
+      <div class="bn-finding" id="finding-judgment">
+        <span class="bn-pill warn">Forecasts</span>
+        <h3>Both forecasts are judgment, and the agent says so</h3>
+        <p>Neither trade rests on a data series. Hormuz uses a guessed rate of 0.1 transits per 30 days. SpaceX uses a guessed year-end value of $1T–$1.5T, which the agent calls "low-confidence judgment". The strategy skipped markets where it had no grounded forecast, as intended.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bn-sec" id="trades">
+    <h2>Trades and the reasoning behind them</h2>
+    <p class="bn-muted">For each trade: the market price of the outcome bought, the agent's own probability, and the blended belief it traded on. The written reasoning is a summary of the agent's log.</p>
+    <div class="bn-cards" id="trade-cards" data-draw="trades" data-source="trades">—</div>
+  </section>
+
+  <section class="bn-sec" id="sizing">
+    <h2>What the trades would have been with the real volume</h2>
+    <p class="bn-muted">Re-run of the agent's own <code>pool_with_market</code> and <code>lmsr_kelly_trade</code> tools with the volume the market actually had, at model confidence 0.3 (the agent called both forecasts judgment). Belief is the probability of the outcome bought.</p>
+    <div class="bn-scroll">
+      <table data-source="sizing" data-row-key="trade" id="sizing-table">
+        <thead><tr>
+          <th data-field="trade">Trade</th>
+          <th class="n" data-field="volume_actual_sigs">Real volume (SIGS)</th>
+          <th class="n" data-field="weight_actual_pct">Market weight with it</th>
+          <th class="n" data-field="pooled_seen_pct">Belief used</th>
+          <th class="n" data-field="pooled_actual_pct">Belief with real volume</th>
+          <th class="n" data-field="cost_seen_sigs">Spend planned</th>
+          <th class="n" data-field="cost_actual_sigs">Spend with real volume</th>
+          <th data-field="action_actual">Decision with real volume</th>
+        </tr></thead>
+        <tbody data-draw="sizing"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bn-sec" id="skill-tree">
+    <h2>Skill tree</h2>
+    <p class="bn-muted">The steps in <code>strategy.md</code> and the tools each one calls. Ten tools are in <code>signals_tools.py</code>, and three belong to the platform. Point at a tool to see what it does.</p>
+    <div class="bn-legend">
+      <span><i class="bn-sw" style="background:var(--color-ok)"></i>Used in both trades</span>
+      <span><i class="bn-sw" style="background:var(--cds-chart-reference)"></i>Hormuz only</span>
+      <span><i class="bn-sw" style="background:var(--color-warn)"></i>SpaceX only</span>
+      <span><i class="bn-sw" style="background:var(--cds-chart-muted)"></i>Not used yet</span>
+      <span><i class="bn-sw" style="border:2px dashed var(--color-fg-muted)"></i>Platform tool</span>
+    </div>
+    <div class="bn-tree-wrap">
+      <div class="bn-tree" data-draw="tree" data-source="skills" role="img" aria-label="Tree of the agent's strategy steps and the tools each step calls, colored by which trades used them"></div>
+    </div>
+  </section>
+
+  <section class="bn-sec" id="markets">
+    <h2>Markets the agent may trade</h2>
+    <div class="bn-scroll">
+      <table data-source="markets" data-row-key="address" id="markets-table">
+        <thead><tr>
+          <th data-field="market">Market</th>
+          <th class="n" data-field="volume_sigs">Volume (SIGS)</th>
+          <th class="n" data-field="top_price_pct">Top price</th>
+          <th class="n" data-field="days_left">Days left</th>
+          <th data-field="agent_traded">Agent traded</th>
+        </tr></thead>
+        <tbody data-draw="markets"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details id="notes">
+    <summary>Sources and assumptions</summary>
+    <ul>
+      <li>Trades, reasoning, balance and limits were copied from the Signals Automatic Trading page and My Positions on 13 Nov 2026. These are fixed copies; they do not update.</li>
+      <li>Volumes, prices and deadlines come from the public Signals market list fetched the same day.</li>
+      <li>"Positions worth now" is shares × current price. It is what the shares would pay out at the current probability, not a sale price after price impact.</li>
+      <li>The sizing re-run uses a bankroll of 1 SIGS and a spend cap of 0.1 SIGS, which matches the 1-Point budget.</li>
+      <li>The tool attribution in the skill tree comes from the steps the agent named in its reasoning. The platform tools are inferred from <code>strategy.md</code>.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+dash.calc('totals', {
+  inputs: ['trades'],
+  title: 'Spend and current value',
+  description: 'Total cost of all trades, their value at current prices (shares × price), and the difference.',
+  fn: (trades) => {
+    let spent = 0, value_now = 0;
+    for (const t of trades) { spent += Number(t.cost_sigs); value_now += Number(t.value_now_sigs); }
+    return [{ spent, value_now, unrealised: value_now - spent }];
+  }
+});
+dash.calc('mkt_summary', {
+  inputs: ['markets'],
+  title: 'Market counts',
+  description: 'How many markets the agent may trade, how many it has traded, and how many nobody has traded.',
+  fn: (markets) => [{
+    applied: markets.length,
+    traded: markets.filter((m) => m.agent_traded === 'yes').length,
+    untouched: markets.filter((m) => m.untouched === 'yes').length
+  }]
+});
+
+window.bnRow = function (el) {
+  const d = dash.data(el.dataset.source);
+  if (d.status !== 'ok' || !Array.isArray(d.data)) return { status: d.status, row: null };
+  let row;
+  if (el.dataset.where) {
+    const [k, v] = el.dataset.where.split('=');
+    row = d.data.find((r) => String(r[k]) === decodeURIComponent(v));
+  } else row = d.data[Number(el.dataset.row || 0)];
+  return { status: 'ok', row: row || null };
+};
+window.bnFmt = function (v, f) {
+  if (v == null || v === '') return '—';
+  const n = Number(v);
+  return f && !Number.isNaN(n) ? d3.format(f)(n) : String(v);
+};
+</script>
+
+<script>
+dash.draw('v', (el) => {
+  const { status, row } = bnRow(el);
+  if (status === 'loading') { el.textContent = '—'; return; }
+  el.textContent = row ? bnFmt(row[el.dataset.field], el.dataset.fmt) : '—';
+});
+
+dash.draw('pnl', (el) => {
+  const { row } = bnRow(el);
+  if (!row) { el.textContent = '—'; return; }
+  const v = Number(row.unrealised);
+  el.textContent = d3.format('+.4f')(v);
+  el.style.color = Math.abs(v) < 0.0005 ? 'var(--color-fg-muted)' : (v > 0 ? 'var(--color-ok)' : 'var(--color-bad)');
+});
+
+dash.draw('trades', (el) => {
+  const d = dash.data('trades');
+  if (d.status !== 'ok') { el.textContent = d.status === 'error' ? 'Failed to load' : '—'; return; }
+  el.replaceChildren();
+  const fields = [
+    ['Outcome bought', 'outcome', null],
+    ['Shares', 'shares', '.4f'],
+    ['Cost (SIGS)', 'cost_sigs', '.4f'],
+    ['Price before → after', null, null],
+    ['Price now', 'price_now_pct', '.1f'],
+    ['Expected profit (SIGS)', 'expected_profit_sigs', '.4f']
+  ];
+  const pending = [];  // charts are drawn after every card is in place, so each measures its final width
+  for (const t of d.data) {
+    const where = 'trade=' + encodeURIComponent(t.trade);
+    const card = document.createElement('article');
+    card.className = 'bn-card';
+    card.id = 'trade-' + t.trade;
+    const mk = (tag, field, fmt, cls) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (field) { e.dataset.source = 'trades'; e.dataset.field = field; e.dataset.where = where; }
+      e.textContent = field ? bnFmt(t[field], fmt) : '';
+      return e;
+    };
+    const head = document.createElement('div');
+    head.style.display = 'grid'; head.style.gap = '4px';
+    const time = mk('span', 'time', null, 'bn-muted');
+    head.append(time, mk('h3', 'market', null), mk('span', 'method', null, 'bn-muted'));
+    card.append(head);
+
+    const kv = document.createElement('div'); kv.className = 'bn-kv';
+    for (const [label, field, fmt] of fields) {
+      const box = document.createElement('div');
+      const l = document.createElement('span'); l.className = 'bn-label'; l.textContent = label;
+      box.append(l);
+      if (field) {
+        const b = mk('b', field, fmt);
+        if (field === 'price_now_pct') { const w = document.createElement('b'); w.append(b, document.createTextNode('%')); box.append(w); }
+        else box.append(b);
+      } else {
+        const w = document.createElement('b');
+        w.append(mk('span', 'price_before_pct', '.2f'), document.createTextNode('% → '), mk('span', 'price_after_pct', '.2f'), document.createTextNode('%'));
+        box.append(w);
+      }
+      kv.append(box);
+    }
+    card.append(kv);
+
+    const fc = document.createElement('p');
+    fc.append(Object.assign(document.createElement('b'), { textContent: 'Forecast: ' }), mk('span', 'forecast', null));
+    card.append(fc);
+
+    const chart = document.createElement('div');
+    chart.className = 'bn-prob'; chart.dataset.source = 'trades';
+    card.append(chart);
+    card.append(mk('p', 'reasoning', null, 'bn-reason'));
+    const tx = document.createElement('span'); tx.className = 'bn-muted';
+    tx.append(document.createTextNode('Transaction '), mk('span', 'tx', null, 'bn-mono'));
+    card.append(tx);
+    el.append(card);
+
+    pending.push(() => {
+    const W = Math.max(240, chart.clientWidth || 300);
+    const rows = [
+      ['Market price', 'market_pct', 'var(--cds-chart-muted)'],
+      ['Agent model', 'model_pct', dash.colors[1] || dash.colors[0]],
+      ['Belief traded on', 'pooled_pct', dash.colors[0]]
+    ];
+    const svg = d3.select(chart).append('svg').attr('width', '100%').attr('height', rows.length * 26 + 22)
+      .attr('role', 'img').attr('aria-label', `Probability of ${t.outcome}: market ${t.market_pct}%, model ${t.model_pct}%, belief ${t.pooled_pct}%`);
+    const labels = svg.append('g');
+    labels.selectAll('text').data(rows).join('text').attr('x', 0).attr('y', (r, i) => i * 26 + 15).text((r) => r[0]);
+    let lw = 0; labels.selectAll('text').each(function () { lw = Math.max(lw, this.getComputedTextLength()); });
+    const left = lw + 10, right = 44;
+    const x = d3.scaleLinear().domain([0, 100]).range([left, W - right]);
+    svg.append('g').selectAll('line').data([0, 50, 100]).join('line')
+      .attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', rows.length * 26).style('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', x(0)).attr('y', (r, i) => i * 26 + 5).attr('height', 14).attr('rx', 2)
+      .attr('width', (r) => Math.max(1, x(Number(t[r[1]])) - x(0))).style('fill', (r) => r[2]);
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', (r) => x(Number(t[r[1]])) + 5).attr('y', (r, i) => i * 26 + 16)
+      .text((r) => d3.format('.1f')(t[r[1]]) + '%');
+    svg.append('g').selectAll('text').data([0, 50, 100]).join('text')
+      .attr('x', x).attr('y', rows.length * 26 + 16).attr('text-anchor', 'middle').text((v) => v + '%');
+    });
+  }
+  pending.forEach((f) => f());
+});
+
+dash.draw('sizing', (tb) => {
+  const d = dash.data('sizing');
+  tb.replaceChildren();
+  if (d.status !== 'ok') return;
+  for (const r of d.data) {
+    const tr = document.createElement('tr');
+    const cells = [
+      [r.trade === 'spacex' ? 'SpaceX (NO)' : 'Hormuz (After Jan 15)', ''],
+      [d3.format(',.1f')(r.volume_actual_sigs), 'n'],
+      [d3.format('.1f')(r.weight_actual_pct) + '%', 'n'],
+      [d3.format('.1f')(r.pooled_seen_pct) + '%', 'n'],
+      [d3.format('.1f')(r.pooled_actual_pct) + '%', 'n'],
+      [d3.format('.4f')(r.cost_seen_sigs), 'n'],
+      [d3.format('.4f')(r.cost_actual_sigs), 'n'],
+      [r.action_actual, '']
+    ];
+    for (const [text, cls] of cells) { const td = document.createElement('td'); td.textContent = text; if (cls) td.className = cls; tr.append(td); }
+    tr.dataset.key = r.trade;
+    tb.append(tr);
+  }
+});
+
+dash.draw('markets', (tb) => {
+  const d = dash.data('markets');
+  tb.replaceChildren();
+  if (d.status !== 'ok') return;
+  const rows = d.data.slice().sort((a, b) => (a.agent_traded === b.agent_traded ? Number(b.volume_sigs) - Number(a.volume_sigs) : (a.agent_traded === 'yes' ? -1 : 1)));
+  for (const r of rows) {
+    const tr = document.createElement('tr'); tr.dataset.key = r.address;
+    const td = (t, c) => { const e = document.createElement('td'); e.textContent = t; if (c) e.className = c; tr.append(e); return e; };
+    td(r.market);
+    td(d3.format(',.1f')(r.volume_sigs), 'n');
+    td(d3.format('.1f')(r.top_price_pct) + '%', 'n');
+    const dl = td(d3.format('.1f')(r.days_left), 'n');
+    if (Number(r.days_left) < 7) dl.style.color = 'var(--color-warn)';
+    const a = td(r.agent_traded === 'yes' ? 'Yes' : 'No');
+    if (r.agent_traded === 'yes') a.style.color = 'var(--color-ok)';
+    tb.append(tr);
+  }
+});
+
+dash.draw('tree', {
+  mount: (el) => {
+    el.replaceChildren();
+    const tip = document.createElement('div');
+    tip.className = 'bn-tip'; tip.hidden = true;
+    el.append(tip);
+    return { tip };
+  },
+  update: (el, made) => {
+    const d = dash.data('skills');
+    d3.select(el).selectAll('svg, .bn-status').remove();
+    if (d.status !== 'ok') {
+      const s = document.createElement('span'); s.className = 'bn-status bn-muted';
+      s.textContent = d.status === 'error' ? 'Failed to load' : '—'; el.append(s); return;
+    }
+    const root = d3.stratify().id((r) => r.id).parentId((r) => r.parent || null)(d.data);
+    const leaves = root.leaves().length;
+    const showDoes = el.clientWidth >= 960;
+    const W = showDoes ? el.clientWidth : 700;
+    const rowH = 30, H = leaves * rowH + 20;
+    const colX = [10, 170, 380];
+    d3.tree().size([H - 20, 1])(root);
+    root.each((n) => { n.px = colX[n.depth]; n.py = n.x + 10; });
+    const color = (u) => u === 'both' ? 'var(--color-ok)' : u === 'hormuz' ? 'var(--cds-chart-reference)' : u === 'spacex' ? 'var(--color-warn)' : 'var(--cds-chart-muted)';
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('role', 'img').attr('aria-label', 'Strategy steps and the tools each one calls');
+    svg.append('g').selectAll('path').data(root.links()).join('path')
+      .attr('d', (l) => `M${l.source.px + 8},${l.source.py} C${(l.source.px + l.target.px) / 2},${l.source.py} ${(l.source.px + l.target.px) / 2},${l.target.py} ${l.target.px - 6},${l.target.py}`)
+      .style('fill', 'none').style('stroke', (l) => l.target.data.kind === 'step' ? 'var(--cds-chart-axis)' : color(l.target.data.used_by))
+      .style('stroke-width', (l) => l.target.data.used_by && l.target.data.used_by !== 'none' ? 2 : 1);
+    const g = svg.append('g').selectAll('g').data(root.descendants()).join('g')
+      .attr('class', (n) => n.data.kind === 'step' || n.data.kind === 'agent' ? 'step' : 'tool')
+      .attr('transform', (n) => `translate(${n.px},${n.py})`);
+    g.append('circle').attr('r', (n) => n.depth === 2 ? 6 : 5)
+      .style('fill', (n) => n.depth === 2 ? color(n.data.used_by) : 'var(--color-fg)')
+      .style('stroke', (n) => n.data.kind === 'platform' ? 'var(--color-fg-muted)' : 'none')
+      .style('stroke-dasharray', '2 2').style('stroke-width', 2);
+    g.append('text').attr('x', 12).attr('dy', '0.35em')
+      .style('font-family', (n) => n.depth === 2 ? 'ui-monospace, SFMono-Regular, Menlo, monospace' : null)
+      .text((n) => n.data.label);
+    g.filter((n) => n.depth === 2 && showDoes).append('text').attr('x', 12 + 250).attr('dy', '0.35em')
+      .style('fill', 'var(--cds-text-secondary)').style('font-size', '11px')
+      .text((n) => n.data.does);
+    const tip = made.tip;
+    g.filter((n) => n.depth === 2).style('cursor', 'default')
+      .on('pointerenter pointermove', (ev, n) => {
+        const used = { both: 'Used in both trades', hormuz: 'Used in the Hormuz trade', spacex: 'Used in the SpaceX trade', none: 'Not used yet' }[n.data.used_by] || '';
+        tip.replaceChildren();
+        const b = document.createElement('b'); b.textContent = n.data.label;
+        const p1 = document.createElement('div'); p1.textContent = n.data.does;
+        const p2 = document.createElement('div'); p2.textContent = used + (n.data.kind === 'platform' ? ' · platform tool' : ' · signals_tools.py');
+        p2.style.color = 'var(--cds-text-secondary)';
+        tip.append(b, p1, p2);
+        const box = el.getBoundingClientRect();
+        tip.style.left = Math.max(0, Math.min(ev.clientX - box.left + 12, box.width - 270)) + 'px';
+        tip.style.top = (ev.clientY - box.top + 12) + 'px';
+        tip.hidden = false;
+      })
+      .on('pointerleave', () => { tip.hidden = true; });
+  },
+  unmount: (el, made) => { made && made.tip && made.tip.remove(); }
+});
+</script>
+
+  <style>
+  .bn { grid-template-columns: minmax(0, 1fr); width: 100%; }
+  .bn-sec > *, .bn-head > * { min-width: 0; }
+  .bn-cards { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+  .bn-findings { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+  .bn p { overflow-wrap: anywhere; }
+  </style>
+  <footer class="site-sources" id="sources">
+    <h2>Data files</h2>
+    <ul>
+      <li><b>Account and limits</b> — Balance, budget, trade limit and expiry from the Signals Automatic Trading page on 13 Nov 2026. <span class="bn-muted">(Claude (copied from Signals), 2026-11-12 · <a href="data/account.json">data</a>)</span></li>
+      <li><b>Markets the agent may trade</b> — The 11 markets applied to the agent, with volume, top price and days left from the public Signals market list on 13 Nov 2026. <span class="bn-muted">(Claude (public Signals API), 2026-11-12 · <a href="data/markets.json">data</a>)</span></li>
+      <li><b>Sizing with real volume</b> — The agent&#x27;s own pooling and Kelly tools re-run with each market&#x27;s actual volume, compared with what it traded. <span class="bn-muted">(Claude (re-run of signals_tools.py), 2026-11-12 · <a href="data/sizing.json">data</a>)</span></li>
+      <li><b>Skill tree</b> — Strategy steps from strategy.md and the tools each calls, marked by which trades used them. <span class="bn-muted">(Claude (from signals_tools.py and strategy.md), 2026-11-12 · <a href="data/skills.json">data</a>)</span></li>
+      <li><b>Agent trades and reasoning</b> — The agent&#x27;s two trades as listed on the Signals Automatic Trading page, with prices from My Positions on 13 Nov 2026. <span class="bn-muted">(Claude (copied from Signals), 2026-11-12 · <a href="data/trades.json">data</a>)</span></li>
+    </ul>
+  </footer>
+</main>
+</body>
+</html>

@@ -1,21 +1,21 @@
 frame,axis,item,evidence,use,score
-3C,Customer,Share-of-search change,"+1.56pt on average (Lotion +1.6pt, Sunscreen -1.6pt, Whitening / spots +1.2pt, Eye drops +5.1pt)",scored,1
-3C,Customer,Category demand,Symptom searches -3.3% YoY (Agent 2 uses this for EPS),reference,
+3C,Customer,Share-of-search change,"+0.98pt on average (Lotion +1.5pt, Sunscreen -2.1pt, Whitening / spots +0.0pt, Eye drops +4.5pt)",scored,0
+3C,Customer,Category demand,Symptom searches -4.8% YoY (Agent 2 uses this for EPS),reference,
 3C,Customer,China demand for Japanese cosmetics,"Japan's cosmetics exports to China + HK +1.4% by weight, fiscal year to date (UN Comtrade)",reference,
 3C,Competitor,Guidance revisions,Direction of Rohto's 2026-08-06 revision not confirmed yet,waiting,
-3C,Competitor,Competitor events,"6 events in 180 days: Santen restructuring, Kose restructuring, Kose M&A, Kose restructuring, Kobayashi M&A, Shiseido restructuring",reference,
+3C,Competitor,Competitor events,"6 events in 180 days: Santen M&A, Santen restructuring, Kose restructuring, Kose M&A, Kose restructuring, Kobayashi M&A",reference,
 3C,Competitor,Peer A&P growth,Peer median +2.2% last fiscal year,reference,
 3C,Company,Revenue growth (company forecast),Rohto 8.3% vs peer median 4.0%,scored,1
 3C,Company,Operating margin (company forecast),Rohto 12.1% vs peer median 9.7%,scored,1
 3C,Company,Own M&A,"Acquisition: Thann Oryza Co., Ltd. (2026-05-29)",reference,
 4P,Product,New product / price filings,None in the last 180 days,waiting,
-4P,Product,Products in e-commerce top 30,"Lotion 0 of top 30 (best #—); Sunscreen 0 of top 30 (best #—); Eye drops 12 of top 30 (best #2); Serum 0 of top 30 (best #—) · Rakuten, 2026-10-30",reference,
+4P,Product,Products in e-commerce top 30,"Lotion 0 of top 30 (best #—); Sunscreen 0 of top 29 (best #—); Eye drops 9 of top 30 (best #3); Serum 0 of top 29 (best #—) · Rakuten, 2026-11-13",reference,
 4P,Product,Shelf assortment,Waiting for store visits,waiting,
-4P,Price,E-commerce unit price,Eye drops per mL: Rohto ¥60.9 vs others ¥42.8,reference,
+4P,Price,E-commerce unit price,Eye drops per mL: Rohto ¥73.2 vs others ¥54.3,reference,
 4P,Price,Shelf unit price,Waiting for store visits,waiting,
 4P,Place,Shelf facing share change,Waiting for store visits,waiting,
 4P,Place,Stock-out gap (peer brands − Rohto),Waiting for store visits,waiting,
-4P,Place,E-commerce top-30 slots,"Lotion 0 of top 30 (best #—); Sunscreen 0 of top 30 (best #—); Eye drops 12 of top 30 (best #2); Serum 0 of top 30 (best #—) · Rakuten, 2026-10-30",reference,
+4P,Place,E-commerce top-30 slots,"Lotion 0 of top 30 (best #—); Sunscreen 0 of top 29 (best #—); Eye drops 9 of top 30 (best #3); Serum 0 of top 29 (best #—) · Rakuten, 2026-11-13",reference,
 4P,Promotion,Promotion efficiency (sales growth − A&P growth),Rohto sales +11.4% vs A&P +8.9%; +4.7pt above the peer median,scored,1
 4P,Promotion,A&P to sales,Rohto 18.2% of sales vs peer median 13.6%,reference,
 4P,Promotion,In-store promotion rate,Waiting for store visits,waiting,

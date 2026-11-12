@@ -1,0 +1,26 @@
+[
+ {
+  "trade": "spacex",
+  "volume_seen_sigs": 0,
+  "volume_actual_sigs": 1431.0,
+  "weight_seen_pct": 0,
+  "weight_actual_pct": 90.0,
+  "pooled_seen_pct": 70.0,
+  "pooled_actual_pct": 29.9,
+  "cost_seen_sigs": 0.1,
+  "cost_actual_sigs": 0.0127,
+  "action_actual": "Buy NO (smaller)"
+ },
+ {
+  "trade": "hormuz",
+  "volume_seen_sigs": 0,
+  "volume_actual_sigs": 15.1,
+  "weight_seen_pct": 0,
+  "weight_actual_pct": 10.5,
+  "pooled_seen_pct": 80.6,
+  "pooled_actual_pct": 77.1,
+  "cost_seen_sigs": 0.1,
+  "cost_actual_sigs": 0.1,
+  "action_actual": "Buy After Jan 15 (same)"
+ }
+]
