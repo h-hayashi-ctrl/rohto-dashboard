@@ -110,6 +110,14 @@ window.dash = (() => {
 <body>
 <main id="dash-root">
 <style>
+.site-switch { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; margin: 0 0 20px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-panel); font-family: var(--font-anthropic-sans); font-size: 13px; line-height: 1.2; max-width: 100%; }
+.site-switch a { padding: 6px 14px; border-radius: 999px; color: var(--color-fg-muted); text-decoration: none; white-space: nowrap; }
+.site-switch a:hover { color: var(--color-fg); }
+.site-switch a[aria-current="page"] { background: var(--color-fg); color: var(--color-bg); }
+.site-switch a:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+</style>
+<nav class="site-switch" aria-label="Dashboards"><a href="./" aria-current="page">Rohto 4527 agents</a><a href="signals/">Signals agent</a></nav>
+<style>
 .rx { display: flex; flex-direction: column; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); }
 .rx-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
 .rx-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }

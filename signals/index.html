@@ -33,9 +33,13 @@
   }
 }
 body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
-.site { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; box-sizing: border-box; }
-.site-nav { font-size: var(--cds-font-size-caption); margin-bottom: 20px; }
-.site a { color: var(--cds-chart-reference); }
+.site { max-width: 1200px; margin: 0 auto; padding: 32px 16px 48px; box-sizing: border-box; }
+.site-switch { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; margin: 0 0 20px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-panel); font-family: var(--font-anthropic-sans); font-size: 13px; line-height: 1.2; max-width: 100%; }
+.site-switch a { padding: 6px 14px; border-radius: 999px; color: var(--color-fg-muted); text-decoration: none; white-space: nowrap; }
+.site-switch a:hover { color: var(--color-fg); }
+.site-switch a[aria-current="page"] { background: var(--color-fg); color: var(--color-bg); }
+.site-switch a:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.site a:not(.site-switch a) { color: var(--cds-chart-reference); }
 .site-sources { margin-top: 48px; border-top: 1px solid var(--color-border-line); padding-top: 16px; font-size: var(--cds-font-size-caption); }
 .site-sources h2 { font-size: var(--cds-font-size-body); margin: 0 0 8px; }
 .site-sources ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; line-height: 1.5; }
@@ -45,7 +49,7 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
 </head>
 <body>
 <main class="site">
-  <nav class="site-nav"><a href="../">← Rohto 4527 dashboard</a></nav>
+  <nav class="site-switch" aria-label="Dashboards"><a href="../">Rohto 4527 agents</a><a href="./" aria-current="page">Signals agent</a></nav>
 <style>
 .bn { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); max-width: 1100px; }
 .bn h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
