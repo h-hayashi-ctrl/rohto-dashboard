@@ -56,7 +56,7 @@ a { color: var(--s0); }
 window.dash = (() => {
   const SOURCES = ['facts', 'alt_groups', 'financials', 'targets', 'peers', 'consensus', 'price_monthly', 'trends_monthly',
     'share_monthly', 'alt_signals', 'jnto', 'uv', 'rakuten', 'debate', 'assumptions', 'warnings', 'inventory',
-    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary', 'price_actions', 'regional'];
+    'competitor_components', 'framework', 'ad_spend', 'competitor_events', 'exports', 'example_shelf', 'example_summary', 'price_actions', 'regional', 'weekly', 'weekly_notes'];
   const store = Object.fromEntries(SOURCES.map((id) => [id, { status: 'loading', data: [] }]));
   const calcs = {};
   const draws = new Map();
@@ -232,6 +232,11 @@ window.dash = (() => {
 .rx-reg-rank li span { margin-right: 6px; }
 .rx-reg-rank li b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; float: right; }
 #reg-links tbody tr:hover td { background: var(--color-bg); }
+.rx-wk-notes { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: var(--cds-font-size-body, 14px); line-height: 1.5; }
+.rx-wk-notes li.rx-wk-headline { font-weight: var(--cds-font-weight-medium); }
+.rx-wk-notes li.rx-wk-note, .rx-wk-notes li.rx-wk-data { color: var(--color-fg-muted); }
+.rx-table tr.rx-wk-group td { color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; font-size: 11px; padding-top: 12px; border-bottom: 0; }
+.rx-table td.rx-wk-same { color: var(--color-fg-muted); }
 </style>
 
 <div class="rx">
@@ -262,6 +267,25 @@ window.dash = (() => {
       <div class="rx-tile"><span class="rx-tile-l">Analyst mean target</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=analyst_target" data-fmt="yen">—</span><span class="rx-tile-s">For reference only</span></div>
       <div class="rx-tile"><span class="rx-tile-l">Adjusted alpha</span><span class="rx-tile-v" data-draw="fact" data-source="facts" data-field="value" data-where="section=headline&amp;metric=adjusted_alpha" data-fmt="spct2">—</span><span class="rx-tile-s">View: <span data-draw="fact" data-source="facts" data-field="text" data-where="section=headline&amp;metric=direction" data-fmt="text">—</span></span></div>
     </div>
+
+    <section class="rx-sec" id="since-last-week">
+      <h2 class="rx-h2">Since last week</h2>
+      <p class="rx-note" data-draw="wk-span">—</p>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Conclusion</h3>
+          <ol class="rx-wk-notes" data-draw="wk-notes"></ol>
+        </div>
+        <div class="rx-card">
+          <h3>Last week vs now</h3>
+          <div class="rx-tablebox" style="max-height:none"><table class="rx-table">
+            <thead><tr><th>Metric</th><th class="n">Last week</th><th class="n">Now</th><th class="n">Change</th></tr></thead>
+            <tbody data-draw="wk-table"></tbody>
+          </table></div>
+          <p class="rx-note">Each value is the latest known on or before that day, so “last week” can come from a few days earlier. Last week's expected return and alpha are recomputed from that week's final target and price with today's formula. Daily history: <a href="data/weekly.csv">weekly.csv</a>, <a href="data/weekly_notes.csv">weekly_notes.csv</a>.</p>
+        </div>
+      </div>
+    </section>
 
     <div class="rx-grid">
       <div class="rx-card" id="targets-card">
@@ -1861,6 +1885,57 @@ dash.draw('warn-body', (tb) => {
     <li><a href="data/price_actions.csv">price_actions.csv</a></li>
   </ul>
 </footer>
+<script>
+// Since last week: notes and comparison table (data/weekly*.csv, built from data/history/snapshots.csv)
+(() => {
+  const { rows, num, F, el, wait } = R;
+  const day = (d) => (d ? d3.timeFormat('%b %-d')(new Date(d + 'T00:00:00')) : '');
+  const fmt = (f, v) => (v === '' || v == null ? '—' : f === 'text' ? v : f === 'n0' ? d3.format('.0f')(+v)
+    : f === 'yen1' ? '¥' + d3.format(',.1f')(+v) : f === 'pct2' ? F.spct2(+v) : (F[f] || F.text)(+v));
+  const chg = (f, v) => {
+    if (v === '' || v == null) return '';
+    const x = +v; if (Math.abs(x) < (f.startsWith('pct') ? 0.0005 : 1e-9)) return 'no change';
+    if (f === 'yen') return F.syen(x);
+    if (f === 'yen1') return (x > 0 ? '+' : '−') + '¥' + d3.format(',.1f')(Math.abs(x));
+    if (f === 'pct' || f === 'pct2') return F.spt(x * 100);
+    if (f === 'n0') return F.sn0(x);
+    return F.sn2(x);
+  };
+  dash.draw('wk-span', (node) => {
+    if (wait(node, ['weekly'], false)) return;
+    const r = rows('weekly');
+    const prev = d3.max(r, (x) => x.prev_date), now = d3.max(r, (x) => x.now_date);
+    node.textContent = `Comparing ${day(now)} with the week before (latest values on or before ${day(prev)}). The conclusion is written from the numbers by a fixed set of rules, not by an agent.`;
+  });
+  dash.draw('wk-notes', (node) => {
+    if (wait(node, ['weekly_notes'], false)) return;
+    node.replaceChildren(...rows('weekly_notes').map((n) => el('li', 'rx-wk-' + n.kind, n.text)));
+  });
+  dash.draw('wk-table', (node) => {
+    if (wait(node, ['weekly'], false)) return;
+    const out = [];
+    let g = '';
+    for (const r of rows('weekly')) {
+      if (r.group !== g) {
+        g = r.group;
+        const tr = el('tr', 'rx-wk-group'); const td = el('td', null, g); td.colSpan = 4; tr.append(td); out.push(tr);
+      }
+      const tr = el('tr');
+      const changed = r.fmt === 'text' ? (r.prev && r.now && r.prev !== r.now)
+        : num(r.change) !== null && Math.abs(num(r.change)) >= (r.fmt.startsWith('pct') ? 0.0005 : 1e-9);
+      const c = r.fmt === 'text' ? (r.prev && r.now ? (changed ? 'changed' : 'same') : '') : chg(r.fmt, r.change);
+      const pv = el('td', 'n', fmt(r.fmt, r.prev)); if (r.prev_date) pv.title = 'as of ' + day(r.prev_date);
+      const nv = el('td', 'n', fmt(r.fmt, r.now)); if (r.now_date) nv.title = 'as of ' + day(r.now_date);
+      const cv = el('td', 'n' + (changed ? '' : ' rx-wk-same'), c);
+      if (changed && r.fmt !== 'text') cv.classList.add(+r.change > 0 ? 'rx-up' : 'rx-down');
+      tr.append(el('td', null, r.label), pv, nv, cv);
+      if (changed) tr.querySelector('td').style.fontWeight = 600;
+      out.push(tr);
+    }
+    node.replaceChildren(...out);
+  });
+})();
+</script>
 </main>
 </body>
 </html>

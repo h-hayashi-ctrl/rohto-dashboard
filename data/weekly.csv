@@ -1,0 +1,19 @@
+key,label,group,fmt,prev,prev_date,now,now_date,change
+direction,Position (official call),Decision,text,neutral,2026-11-03,overweight,2026-11-13,
+price,Share price,Decision,yen,2696.0,2026-11-06,2629.0,2026-11-13,-67.0
+debate_target,Final target (debate),Decision,yen,3074,2026-11-03,3103,2026-11-13,29.0
+expected_return,Expected return at final target,Decision,pct,0.1587,2026-11-06,0.1993,2026-11-13,0.0406
+adjusted_alpha,Confidence-adjusted alpha,Decision,pct2,0.0247,2026-11-06,0.0348,2026-11-13,0.0101
+confidence,Confidence,Decision,n2,0.25,2026-11-03,0.25,2026-11-13,0.0
+ow_if_price_below,Overweight while price below,Decision,yen,,,2919,2026-11-13,
+decision_status,Re-debate check,Decision,text,,,hold,2026-11-13,
+agent1_target,Agent 1 target,Agents,yen,3076,2026-11-03,3076,2026-11-13,0.0
+agent2_target,Agent 2 adjusted target,Agents,yen,3098,2026-11-03,3090,2026-11-13,-8.0
+agent3_target,Agent 3 adjusted target,Agents,yen,3174,2026-11-03,3174,2026-11-13,0.0
+brand_yoy,"Brand search, YoY",Signals,pct,0.119,2026-11-03,0.0849,2026-11-13,-0.0341
+symptom_yoy,"Symptom & weather search, YoY",Signals,pct,-0.039,2026-11-03,-0.0476,2026-11-13,-0.0086
+inbound_yoy,"Inbound proxy, YoY",Signals,pct,-0.223,2026-11-03,-0.2232,2026-11-13,-0.0002
+competitor_score,Competitor position score,Signals,n0,4,2026-11-03,3,2026-11-13,-1.0
+analyst_target,Analyst mean target,Market,yen,3404,2026-10-30,3404,2026-11-13,0.0
+consensus_eps_fy1,"Consensus EPS, next FY",Market,yen1,161.97314,2026-10-30,159.40779,2026-11-13,-2.5653
+health,Data health check,Market,text,ok,2026-11-03,ok,2026-11-13,

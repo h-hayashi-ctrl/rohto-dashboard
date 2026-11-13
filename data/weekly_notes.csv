@@ -1,0 +1,11 @@
+n,kind,text
+1,headline,"The call moved from neutral to overweight. The Nov 13 debate set a final target of ¥3,103 (was ¥3,074) with the share price at ¥2,629."
+2,price,"The share price fell 2.5% (¥2,696 on Nov 6 → ¥2,629 on Nov 11). A lower price against a similar target means more expected upside."
+3,return,Expected return at the final target is 19.9% (last week 15.9%); confidence-adjusted alpha is +3.48% (last week +2.47%).
+4,note,"Last week's official call was still the Oct 20 debate's neutral, set when the price was higher. At last week's price the same target would already have cleared the overweight line (alpha +2.47% against a ±0.5% band), so this week's change mostly confirms that."
+5,agents,"Agent 2's adjusted target fell ¥8 to ¥3,090, as brand search growth went from +11.9% to +8.5% YoY and symptom searches from -3.9% to -4.8%."
+6,signals,"Agent 3's competitor score went from +4 to +3 (share-of-search change +1 → +0), but the peer premium stayed at 6%, so its target did not move."
+7,threshold,"At ¥2,629 the price is ¥290 (11%) below ¥2,919, the level above which the call would drop to neutral."
+8,threshold,"Re-debate check: hold, no trigger fired (price, consensus, disclosures, age of debate)."
+9,data,Data health check: ok.
+10,data,Today's price fetch returned an older close (Nov 11); the server already saw a close for Nov 12. Figures above use Nov 11.
