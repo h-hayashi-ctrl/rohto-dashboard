@@ -1,0 +1,101 @@
+[
+ {
+  "trade": "hormuz",
+  "stance": "supports",
+  "outlet": "Straits (straits.live)",
+  "date": "2026-11-12",
+  "title": "Strait of Hormuz News, November 12, 2026: Straits Daily Brief",
+  "url": "https://straits.live/briefs/2026-11-12",
+  "point": "Lists the strait as closed to commercial shipping, citing IMF PortWatch: 3 vessels on 8 Nov against a typical 85 a day."
+ },
+ {
+  "trade": "hormuz",
+  "stance": "supports",
+  "outlet": "hormuz.now",
+  "date": "2026-11",
+  "title": "How Many Ships Crossed the Strait of Hormuz Today? Live Transit Count",
+  "url": "https://hormuz.now/traffic",
+  "point": "Status \"Restricted\": about 6.9 AIS-visible crossings a day in the past week against 84.8 before the crisis, and the ships that cross do so under US naval coordination, which the market rules exclude."
+ },
+ {
+  "trade": "hormuz",
+  "stance": "supports",
+  "outlet": "Critical Threats (AEI/ISW)",
+  "date": "2026-11-12",
+  "title": "Iran Update: November 12, 2026",
+  "url": "https://www.criticalthreats.org/analysis/iran-update-november-12-2026",
+  "point": "Iran keeps claiming mine strikes on the US-backed southern route, and UKMTO reported two projectile attacks on tankers in and near the strait."
+ },
+ {
+  "trade": "hormuz",
+  "stance": "supports",
+  "outlet": "Insurance Business",
+  "date": "2026",
+  "title": "Washington's $40 billion Hormuz insurance fix: zero takers",
+  "url": "https://www.insurancebusinessmag.com/us/news/breaking-news/washingtons-40-billion-hormuz-insurance-fix-zero-takers-575507.aspx",
+  "point": "The US reinsurance facility covers only ships under US naval escort and had placed no cover. Without escort, ships have no war-risk cover, which is what an unescorted transit would need."
+ },
+ {
+  "trade": "hormuz",
+  "stance": "against",
+  "outlet": "Gulf News",
+  "date": "2026-11-10",
+  "title": "Hormuz shipping 'below normal, but not stalled': UKMTO",
+  "url": "https://gulfnews.com/world/mena/hormuz-shipping-below-normal-but-not-stalled-ukmto-1.500741839",
+  "point": "UKMTO counted 170 outbound and 155 inbound transits in a week. Traffic is moving, though mostly with US facilitation, so it does not yet meet \"pre-conflict terms\"."
+ },
+ {
+  "trade": "hormuz",
+  "stance": "context",
+  "outlet": "Al Jazeera",
+  "date": "2026-04-28",
+  "title": "When will Strait of Hormuz be 'safe' for commercial shipping again?",
+  "url": "https://www.aljazeera.com/features/2026/4/28/when-will-strait-of-hormuz-be-safe-for-commercial-shipping-again",
+  "point": "Insurers say any remaining mine risk would keep cover away and traffic halted, so a return to normal terms waits on mine clearance."
+ },
+ {
+  "trade": "spacex",
+  "stance": "supports",
+  "outlet": "Investing.com",
+  "date": "2026-11-12",
+  "title": "SpaceX Stock: IPO Date, Share Price & News",
+  "url": "https://www.investing.com/equities/spacex",
+  "point": "Market cap about $1.92T after the 12 Nov session. Reaching $3T needs a rise of roughly 58% in seven weeks."
+ },
+ {
+  "trade": "spacex",
+  "stance": "supports",
+  "outlet": "Wikipedia",
+  "date": "2026",
+  "title": "Initial public offering of SpaceX",
+  "url": "https://en.wikipedia.org/wiki/Initial_public_offering_of_SpaceX",
+  "point": "IPO on 12 Jun 2026 at $1.77T. The shares jumped in the first days, then fell about 50% from that peak by late July."
+ },
+ {
+  "trade": "spacex",
+  "stance": "supports",
+  "outlet": "TipRanks",
+  "date": "2026",
+  "title": "SpaceX Stock Gains Ahead of 328M-Share Unlock",
+  "url": "https://www.tipranks.com/news/spacex-stock-forecast-spcx-gains-ahead-of-unlock-what-investors-should-know",
+  "point": "Lock-up expiries keep adding shares that insiders can sell, which weighs on the price."
+ },
+ {
+  "trade": "spacex",
+  "stance": "against",
+  "outlet": "The Motley Fool",
+  "date": "2026-11-10",
+  "title": "Here's How Much a $5,000 Investment in SpaceX Stock Could Be Worth by November 2027",
+  "url": "https://fool.com/investing/2026/11/10/heres-how-much-a-5000-investment-in-spacex-stock-c",
+  "point": "Median one-year analyst target is $245 (about $3.3T), above the threshold. But that is a 12-month target; the market closes on 31 Dec 2026."
+ },
+ {
+  "trade": "spacex",
+  "stance": "against",
+  "outlet": "MarketBeat",
+  "date": "2026-11-11",
+  "title": "SpaceX (NASDAQ:SPCX) Stock Falls 2.3% - What's Next?",
+  "url": "https://www.marketbeat.com/instant-alerts/price-spacex-nasdaq-spcx-stock-falls-23-whats-next-2026-11-11/",
+  "point": "Latest quarter beat estimates with revenue up 161% year on year; consensus \"Moderate Buy\" with an average target of $243.60."
+ }
+]

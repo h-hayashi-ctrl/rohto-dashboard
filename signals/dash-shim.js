@@ -2,7 +2,7 @@
    (dash.data, dash.calc, dash.draw, dash.onData, dash.colors), so the page's own
    code runs unchanged as a static site. Data comes from data/<id>.json beside it. */
 (function () {
-  const SOURCES = ['account', 'markets', 'sizing', 'skills', 'trades'];
+  const SOURCES = ['account', 'markets', 'sizing', 'skills', 'trades', 'brackets', 'articles', 'hormuz_transits', 'spcx_mcap'];
   const store = {};
   const calcs = {};
   const draws = {};

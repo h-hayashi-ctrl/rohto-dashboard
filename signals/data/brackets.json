@@ -1,0 +1,44 @@
+[
+ {
+  "trade": "hormuz",
+  "outcome": "By Nov 30, 2026",
+  "model_pct": 6.1,
+  "market_pct": 21.5,
+  "bought": "no"
+ },
+ {
+  "trade": "hormuz",
+  "outcome": "By Dec 31, 2026",
+  "model_pct": 9.2,
+  "market_pct": 21.5,
+  "bought": "no"
+ },
+ {
+  "trade": "hormuz",
+  "outcome": "By Jan 15, 2027",
+  "model_pct": 4.1,
+  "market_pct": 21.5,
+  "bought": "no"
+ },
+ {
+  "trade": "hormuz",
+  "outcome": "After Jan 15, 2027",
+  "model_pct": 80.5,
+  "market_pct": 35.5,
+  "bought": "yes"
+ },
+ {
+  "trade": "spacex",
+  "outcome": "YES",
+  "model_pct": 30.0,
+  "market_pct": 73.9,
+  "bought": "no"
+ },
+ {
+  "trade": "spacex",
+  "outcome": "NO",
+  "model_pct": 70.0,
+  "market_pct": 26.1,
+  "bought": "yes"
+ }
+]

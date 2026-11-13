@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bracket Nowcaster Report</title>
-<meta name="description" content="How the Signals prediction-market agent (Bracket Nowcaster) has traded: spend, trades, sizing and the markets it may trade.">
+<meta name="description" content="How the Signals prediction-market agent (Bracket Nowcaster) has traded: spend, trades with the data and reporting behind them, sizing and the markets it may trade.">
 <style>
 :root {
   --color-bg: #faf9f6; --color-fg: #1b1b19; --color-fg-muted: #6b6a65; --color-panel: #ffffff;
@@ -139,13 +139,14 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
         <span class="bn-pill warn">Forecasts</span>
         <h3>Both forecasts are judgment, and the agent says so</h3>
         <p>Neither trade rests on a data series. Hormuz uses a guessed rate of 0.1 transits per 30 days. SpaceX uses a guessed year-end value of $1T–$1.5T, which the agent calls "low-confidence judgment". The strategy skipped markets where it had no grounded forecast, as intended.</p>
+        <p class="bn-muted">The data checked afterwards backs both directions: Hormuz traffic is still about 4 ships a day, against roughly 65 before the crisis, and SpaceX is worth about $1.9T. That is above the agent’s guess but still 58% short of $3T. See the charts and reporting under each trade.</p>
       </div>
     </div>
   </section>
 
   <section class="bn-sec" id="trades">
     <h2>Trades and the reasoning behind them</h2>
-    <p class="bn-muted">For each trade: the market price of the outcome bought, the agent's own probability, and the blended belief it traded on. The written reasoning is a summary of the agent's log.</p>
+    <p class="bn-muted">For each trade: the market price of the outcome bought, the agent's own probability, and the blended belief it traded on. The written reasoning is a summary of the agent's log. Under it: the model against the market for every outcome, the data series the forecast turns on, and reporting that supports or cuts against the decision. The agent did not read these articles; they were collected afterwards to check its reasoning.</p>
     <div class="bn-cards" id="trade-cards" data-draw="trades" data-source="trades">—</div>
   </section>
 
@@ -249,6 +250,164 @@ window.bnFmt = function (v, f) {
   const n = Number(v);
   return f && !Number.isNaN(n) ? d3.format(f)(n) : String(v);
 };
+
+// Tooltip box inside a .bn-plot
+function bnTip(el) {
+  let tip = el.querySelector('.bn-tip');
+  if (!tip) { tip = document.createElement('div'); tip.className = 'bn-tip'; tip.hidden = true; el.append(tip); }
+  return {
+    show(ev, lines) {
+      tip.replaceChildren(...lines.map((l, i) => { const d = document.createElement('div'); d.textContent = l; if (i === 0) d.style.fontWeight = '600'; else d.style.color = 'var(--cds-text-secondary)'; return d; }));
+      const box = el.getBoundingClientRect();
+      tip.hidden = false;
+      const w = tip.offsetWidth;
+      let x = ev.clientX - box.left + 12;
+      if (x + w > box.width) x = ev.clientX - box.left - w - 12;
+      tip.style.left = Math.max(0, x) + 'px';
+      tip.style.top = Math.max(0, ev.clientY - box.top - 10) + 'px';
+    },
+    hide() { tip.hidden = true; }
+  };
+}
+
+// Grouped bars: market price and agent model for every outcome of one market
+function drawBrackets(el, trade) {
+  const rows = (dash.data('brackets').data || []).filter((r) => r.trade === trade);
+  if (!rows.length) return;
+  const W = Math.max(260, el.clientWidth || 320);
+  const series = [['Market price', 'market_pct', 'var(--cds-chart-muted)'], ['Agent model', 'model_pct', dash.colors[1]]];
+  const barH = 12, gap = 2, rowH = series.length * (barH + gap) + 14, top = 22;
+  const H = top + rows.length * rowH + 18;
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H)
+    .attr('role', 'img').attr('aria-label', 'Market price and agent model for each outcome: ' + rows.map((r) => `${r.outcome} market ${r.market_pct}% model ${r.model_pct}%`).join('; '));
+  // legend
+  const lg = svg.append('g');
+  let lx = 0;
+  series.forEach(([name, , c]) => {
+    const g = lg.append('g').attr('transform', `translate(${lx},4)`);
+    g.append('rect').attr('width', 10).attr('height', 10).attr('rx', 2).style('fill', c);
+    const tx = g.append('text').attr('x', 14).attr('y', 9).text(name);
+    lx += 14 + tx.node().getComputedTextLength() + 16;
+  });
+  const labels = svg.append('g');
+  labels.selectAll('text').data(rows).join('text').attr('x', 0)
+    .attr('y', (r, i) => top + i * rowH + barH + 2)
+    .attr('class', (r) => r.bought === 'yes' ? 'bn-strong' : null)
+    .text((r) => r.outcome + (r.bought === 'yes' ? ' ✓ bought' : ''));
+  let lw = 0; labels.selectAll('text').each(function () { lw = Math.max(lw, this.getComputedTextLength()); });
+  const left = Math.min(lw + 10, W * 0.45), right = 40;
+  const x = d3.scaleLinear().domain([0, 100]).range([left, W - right]);
+  svg.append('g').selectAll('line').data([0, 25, 50, 75, 100]).join('line')
+    .attr('x1', x).attr('x2', x).attr('y1', top - 4).attr('y2', H - 18).style('stroke', 'var(--cds-chart-grid)');
+  svg.append('g').selectAll('text').data([0, 50, 100]).join('text')
+    .attr('x', x).attr('y', H - 4).attr('text-anchor', 'middle').text((v) => v + '%');
+  const tip = bnTip(el);
+  rows.forEach((r, i) => {
+    const y0 = top + i * rowH;
+    series.forEach(([name, f, c], j) => {
+      const y = y0 + j * (barH + gap);
+      svg.append('rect').attr('x', x(0)).attr('y', y).attr('height', barH).attr('rx', 2)
+        .attr('width', Math.max(1, x(r[f]) - x(0))).style('fill', c);
+      svg.append('text').attr('x', x(r[f]) + 4).attr('y', y + barH - 2).text(d3.format('.1f')(r[f]) + '%');
+    });
+    svg.append('rect').attr('x', 0).attr('y', y0 - 2).attr('width', W).attr('height', rowH - 4).style('fill', 'transparent')
+      .on('pointerenter pointermove', (ev) => tip.show(ev, [r.outcome, `Market price ${r.market_pct}%`, `Agent model ${r.model_pct}%`,
+        `Gap ${d3.format('+.1f')(r.model_pct - r.market_pct)} pt` + (r.bought === 'yes' ? ' · bought' : '')]))
+      .on('pointerleave', () => tip.hide());
+  });
+}
+
+// Line over time with a threshold/reference line and dated markers; crosshair tooltip
+function bnLine(el, o) {
+  const rows = o.rows.map((r) => ({ ...r, _d: new Date(r.date + 'T00:00:00') }));
+  if (!rows.length) return;
+  const W = Math.max(260, el.clientWidth || 320), H = 220;
+  const m = { t: 14, r: 12, b: 24, l: 40 };
+  const end = o.extendTo ? new Date(o.extendTo + 'T00:00:00') : rows[rows.length - 1]._d;
+  const x = d3.scaleTime().domain([rows[0]._d, end]).range([m.l, W - m.r]);
+  const ymax = Math.max(d3.max(rows, (r) => r[o.y]), o.ref ? o.ref.value : 0) * 1.12;
+  const y = d3.scaleLinear().domain([0, ymax]).nice().range([H - m.b, m.t]);
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('role', 'img').attr('aria-label', o.aria);
+  svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
+    .attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+  svg.append('g').selectAll('text').data(y.ticks(4)).join('text')
+    .attr('x', m.l - 6).attr('y', (v) => y(v) + 4).attr('text-anchor', 'end').text(o.yFmt);
+  svg.append('g').selectAll('text').data(x.ticks(W < 420 ? 4 : 6)).join('text')
+    .attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').text(d3.timeFormat('%b %y'));
+  if (o.window) {  // shaded future window (no data yet)
+    const a = x(new Date(o.window.from + 'T00:00:00'));
+    svg.append('rect').attr('x', a).attr('y', m.t).attr('width', Math.max(0, x(end) - a)).attr('height', H - m.b - m.t)
+      .style('fill', 'var(--cds-chart-grid)').style('opacity', 0.6);
+  }
+  (o.vlines || []).forEach((v, i) => {
+    const vx = x(new Date(v.date + 'T00:00:00'));
+    svg.append('line').attr('x1', vx).attr('x2', vx).attr('y1', m.t).attr('y2', H - m.b)
+      .style('stroke', 'var(--cds-chart-axis)').style('stroke-dasharray', '2 3');
+    if (v.label) svg.append('text').attr('x', vx - 3).attr('y', m.t + 10 + (i % 2) * 12).attr('text-anchor', 'end').text(v.label);
+  });
+  if (o.ref) {
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(o.ref.value)).attr('y2', y(o.ref.value))
+      .style('stroke', 'var(--color-fg-muted)').style('stroke-dasharray', '5 4').style('stroke-width', 1.5);
+    svg.append('text').attr('x', (m.l + W - m.r) / 2).attr('text-anchor', 'middle').attr('y', y(o.ref.value) - 6).attr('class', 'bn-strong bn-halo').text(o.ref.label);
+  }
+  const line = d3.line().x((r) => x(r._d)).y((r) => y(r[o.y]));
+  svg.append('path').datum(rows).attr('d', line).style('fill', 'none').style('stroke', dash.colors[0]).style('stroke-width', 2)
+    .style('stroke-linejoin', 'round');
+  const last = rows[rows.length - 1];
+  svg.append('circle').attr('cx', x(last._d)).attr('cy', y(last[o.y])).attr('r', 4)
+    .style('fill', dash.colors[0]).style('stroke', 'var(--color-panel)').style('stroke-width', 2);
+  svg.append('text').attr('x', x(last._d) + 6).attr('y', y(last[o.y]) - 6).attr('class', 'bn-strong').text(o.lastLabel(last));
+  // crosshair
+  const cross = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).style('stroke', 'var(--cds-chart-axis)').style('display', 'none');
+  const dot = svg.append('circle').attr('r', 4).style('fill', dash.colors[0]).style('stroke', 'var(--color-panel)').style('stroke-width', 2).style('display', 'none');
+  const tip = bnTip(el), bis = d3.bisector((r) => r._d).center;
+  svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).style('fill', 'transparent')
+    .on('pointerenter pointermove', function (ev) {
+      const r = rows[bis(rows, x.invert(d3.pointer(ev, this)[0]))];
+      cross.attr('x1', x(r._d)).attr('x2', x(r._d)).style('display', null);
+      dot.attr('cx', x(r._d)).attr('cy', y(r[o.y])).style('display', null);
+      tip.show(ev, o.tip(r));
+    })
+    .on('pointerleave', () => { cross.style('display', 'none'); dot.style('display', 'none'); tip.hide(); });
+}
+
+const EVIDENCE = {
+  hormuz: {
+    title: 'Ships through the Strait of Hormuz per day (7-day average)',
+    note: 'IMF PortWatch daily transit counts (AIS), to 8 Nov 2026. Dashed line: average before the crisis (Nov 2025–Feb 2026). Shaded: the market’s window, 5 Nov 2026 to 15 Jan 2027. Even the few ships still crossing move under US coordination, which the rules exclude.',
+    draw: (el) => {
+      const rows = dash.data('hormuz_transits').data || [];
+      const pre = rows.filter((r) => r.date < '2026-03-01');
+      const base = d3.mean(pre, (r) => r.transits);
+      bnLine(el, {
+        rows, y: 'avg7', yFmt: d3.format('d'), extendTo: '2027-01-15',
+        ref: { value: base, label: `Before the crisis ≈ ${d3.format('.0f')(base)} a day` },
+        window: { from: '2026-11-05' },
+        vlines: [{ date: '2026-11-30', label: '' }, { date: '2026-12-31', label: '' }, { date: '2027-01-15', label: 'Jan 15' }],
+        lastLabel: (r) => d3.format('.1f')(r.avg7) + '/day',
+        tip: (r) => [d3.timeFormat('%-d %b %Y')(r._d), `7-day average ${d3.format('.1f')(r.avg7)} ships`, `That day ${r.transits} ships (${r.tankers} tankers)`],
+        aria: `Daily Strait of Hormuz transits fell from about ${d3.format('.0f')(base)} a day before the crisis to ${rows.length ? rows[rows.length - 1].avg7 : '—'} a day by 8 Nov 2026`
+      });
+    }
+  },
+  spacex: {
+    title: 'SpaceX market cap at each close (US$ trillions)',
+    note: 'SPCX closing price (Yahoo Finance) × 13.58 bn shares (implied shares outstanding, Nov 2026), so earlier points are approximate. Dashed line: the $3T threshold the market resolves on, by 31 Dec 2026. The agent guessed $1T–$1.5T for year end; the actual level is about $1.9T, still far below $3T.',
+    draw: (el) => {
+      const rows = dash.data('spcx_mcap').data || [];
+      const last = rows[rows.length - 1];
+      bnLine(el, {
+        rows, y: 'mcap_tn', yFmt: (v) => '$' + d3.format('.1f')(v) + 'T', extendTo: '2026-12-31',
+        ref: { value: 3, label: '$3T threshold' + (last ? ` (needs ${d3.format('+.0%')(3 / last.mcap_tn - 1)})` : '') },
+        window: { from: last ? last.date : '2026-11-12' },
+        vlines: [{ date: '2026-12-31', label: 'Dec 31' }],
+        lastLabel: (r) => '$' + d3.format('.2f')(r.mcap_tn) + 'T',
+        tip: (r) => [d3.timeFormat('%-d %b %Y')(r._d), `Market cap ≈ $${d3.format('.2f')(r.mcap_tn)}T`, `Close $${d3.format('.2f')(r.close)}`],
+        aria: `SpaceX market cap since the June 2026 IPO peaked near $2.9T and was about $${last ? last.mcap_tn : '—'}T on 12 Nov 2026, below the $3T threshold`
+      });
+    }
+  }
+};
 </script>
 
 <script>
@@ -323,10 +482,51 @@ dash.draw('trades', (el) => {
     chart.className = 'bn-prob'; chart.dataset.source = 'trades';
     card.append(chart);
     card.append(mk('p', 'reasoning', null, 'bn-reason'));
+
+    // Every outcome (model vs market) and the data behind the forecast, side by side
+    const evid = document.createElement('div'); evid.className = 'bn-evid';
+    const fig = (title, note) => {
+      const f = document.createElement('div'); f.className = 'bn-fig';
+      f.append(Object.assign(document.createElement('h4'), { textContent: title }));
+      const p = document.createElement('div'); p.className = 'bn-plot'; f.append(p);
+      if (note) f.append(Object.assign(document.createElement('span'), { className: 'bn-muted', textContent: note }));
+      evid.append(f);
+      return p;
+    };
+    const brPlot = fig('Every outcome: market price vs the agent’s model',
+      t.trade === 'hormuz' ? 'Model: first transit as a constant-rate event, 0.1 per 30 days from 5 Nov.' : 'Model: the agent’s year-end market-cap judgment turned into a YES/NO probability.');
+    const ev = EVIDENCE[t.trade];
+    const evPlot = ev ? fig(ev.title, ev.note) : null;
+    card.append(evid);
+
+    const arts = (dash.data('articles').data || []).filter((a) => a.trade === t.trade);
+    if (arts.length) {
+      const h = document.createElement('h4'); h.textContent = 'Reporting behind the decision'; h.style.margin = '0';
+      h.style.fontSize = 'var(--cds-font-size-body)';
+      const ul = document.createElement('ul'); ul.className = 'bn-arts';
+      const order = { supports: 0, against: 1, context: 2 };
+      for (const a of arts.slice().sort((x, y) => order[x.stance] - order[y.stance])) {
+        const li = document.createElement('li');
+        const pill = document.createElement('span');
+        pill.className = 'bn-pill ' + ({ supports: 'ok', against: 'bad', context: 'ctx' }[a.stance]);
+        pill.textContent = { supports: 'Supports', against: 'Against', context: 'Context' }[a.stance];
+        const head = document.createElement('span');
+        const link = Object.assign(document.createElement('a'), { href: a.url, textContent: a.title, target: '_blank', rel: 'noopener' });
+        head.append(link, document.createTextNode(' — ' + a.outlet + (a.date ? ', ' + a.date : '')));
+        li.append(pill, head, Object.assign(document.createElement('span'), { className: 'bn-pt', textContent: a.point }));
+        ul.append(li);
+      }
+      const wrap = document.createElement('div'); wrap.style.display = 'grid'; wrap.style.gap = '8px';
+      wrap.append(h, ul);
+      card.append(wrap);
+    }
+
     const tx = document.createElement('span'); tx.className = 'bn-muted';
     tx.append(document.createTextNode('Transaction '), mk('span', 'tx', null, 'bn-mono'));
     card.append(tx);
     el.append(card);
+    pending.push(() => drawBrackets(brPlot, t.trade));
+    if (ev) pending.push(() => ev.draw(evPlot));
 
     pending.push(() => {
     const W = Math.max(240, chart.clientWidth || 300);
@@ -465,7 +665,20 @@ dash.draw('tree', {
   <style>
   .bn { grid-template-columns: minmax(0, 1fr); width: 100%; }
   .bn-sec > *, .bn-head > * { min-width: 0; }
-  .bn-cards { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+  .bn-cards { grid-template-columns: minmax(0, 1fr); }
+  .bn-evid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: var(--cds-gap-md) var(--cds-gap-xl); }
+  .bn-fig { display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+  .bn-fig h4 { margin: 0; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); }
+  .bn-plot { position: relative; min-width: 0; }
+  .bn-plot svg text { fill: var(--cds-text-secondary); font-size: 11px; }
+  .bn-plot svg text.bn-strong { fill: var(--color-fg); font-weight: 600; }
+  .bn-plot svg text.bn-halo { paint-order: stroke; stroke: var(--color-panel); stroke-width: 4px; stroke-linejoin: round; }
+  .bn-arts { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cds-gap-sm); }
+  .bn-arts li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: var(--cds-font-size-caption); line-height: 1.5; }
+  .bn-arts .bn-pill { grid-row: span 2; align-self: start; min-width: 64px; text-align: center; }
+  .bn-arts a { font-weight: var(--cds-font-weight-medium); }
+  .bn-arts .bn-pt { color: var(--color-fg-muted); }
+  .bn-pill.ctx { color: var(--color-fg-muted); }
   .bn-findings { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
   .bn p { overflow-wrap: anywhere; }
   </style>
@@ -476,6 +689,10 @@ dash.draw('tree', {
       <li><b>Markets the agent may trade</b> — The 11 markets applied to the agent, with volume, top price and days left from the public Signals market list on 13 Nov 2026. <span class="bn-muted">(Claude (public Signals API), 2026-11-12 · <a href="data/markets.json">data</a>)</span></li>
       <li><b>Sizing with real volume</b> — The agent&#x27;s own pooling and Kelly tools re-run with each market&#x27;s actual volume, compared with what it traded. <span class="bn-muted">(Claude (re-run of signals_tools.py), 2026-11-12 · <a href="data/sizing.json">data</a>)</span></li>
       <li><b>Skill tree</b> — Strategy steps from strategy.md and the tools each calls, marked by which trades used them. <span class="bn-muted">(Claude (from signals_tools.py and strategy.md), 2026-11-12 · <a href="data/skills.json">data</a>)</span></li>
+      <li><b>Outcome probabilities</b> — Model and market probability for every outcome of the two traded markets, from the agent's trade logs and the public Signals market list. <span class="bn-muted">(Claude (from Signals), 2026-11-13 · <a href="data/brackets.json">data</a>)</span></li>
+      <li><b>Hormuz transits</b> — Daily ships through the Strait of Hormuz, 1 Nov 2025 to 8 Nov 2026, with a 7-day average. <span class="bn-muted">(IMF PortWatch Daily Chokepoints Data, fetched 2026-11-13 · <a href="data/hormuz_transits.json">data</a>)</span></li>
+      <li><b>SpaceX market cap</b> — SPCX daily close since the 12 Jun 2026 IPO × 13.58 bn implied shares outstanding. <span class="bn-muted">(Yahoo Finance via yfinance, fetched 2026-11-13 · <a href="data/spcx_mcap.json">data</a>)</span></li>
+      <li><b>Reporting behind the decisions</b> — News and tracker pages that support, cut against or give context for each trade, with a one-line summary of each. <span class="bn-muted">(Claude (web search), 2026-11-13 · <a href="data/articles.json">data</a>)</span></li>
       <li><b>Agent trades and reasoning</b> — The agent&#x27;s two trades as listed on the Signals Automatic Trading page, with prices from My Positions on 13 Nov 2026. <span class="bn-muted">(Claude (copied from Signals), 2026-11-12 · <a href="data/trades.json">data</a>)</span></li>
     </ul>
   </footer>
