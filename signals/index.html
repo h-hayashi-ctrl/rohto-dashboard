@@ -116,6 +116,43 @@ body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-fami
     </div>
   </section>
 
+  <section class="bn-sec" id="mechanism">
+    <h2>How the agent works</h2>
+    <p>Bracket Nowcaster never asks the language model for a probability. The model writes down one forecast: the number the market resolves on, with an error band, or how often an event happens. Fixed Python tools do the rest. They turn the forecast into a probability for each outcome, weigh it against the market price, and choose the trade size. The example values below come from the Hormuz trade.</p>
+    <ol class="bn-flow" aria-label="Steps of the agent, from screening markets to sending trades">
+      <li class="tool"><span class="bn-who">Tools</span><b>1 · Screen</b><span>Reads each market's prices, volume, deadline and rules. Skips closed markets and markets within 6 hours of the deadline.</span><span class="bn-eg">4 date brackets, 64 days left</span></li>
+      <li class="llm"><span class="bn-who">LLM</span><b>2 · Forecast a number</b><span>The only judgment step. A centre and error (sd) for the resolving figure, or a rate for "when will X happen". The sd can't go below a set minimum.</span><span class="bn-eg">0.1 qualifying transits per 30 days</span></li>
+      <li class="tool"><span class="bn-who">Tools</span><b>3 · Price the brackets</b><span>Reads the outcome labels as numeric or date ranges. Fat-tailed distribution for numbers, constant-rate arrivals for dates.</span><span class="bn-eg">6.1 / 9.2 / 4.1 / 80.5 %</span></li>
+      <li class="tool"><span class="bn-who">Tools</span><b>4 · Weigh the market</b><span>Blends model and market price. The market gets more weight the more SIGS have traded and the closer the deadline. It gets less weight when the forecast rests on hard data.</span><span class="bn-eg">volume read as 0 → market weight 0</span></li>
+      <li class="tool"><span class="bn-who">Tools</span><b>5 · Size the trade</b><span>Quarter-Kelly computed on the exact LMSR cost curve, so the agent's own price impact counts. It needs an edge of at least 3 pt, spends at most 10% of the budget, and checks the cost against the platform's quote.</span><span class="bn-eg">buy 0.2817 shares for 0.100 SIGS</span></li>
+      <li class="tool"><span class="bn-who">Tools</span><b>6 · Pick across markets</b><span>Ranks every candidate by expected log growth per SIGS. Then fills the usage limit and daily trade limit, with no theme taking more than 40% of the budget.</span><span class="bn-eg">1 trade per day allowed</span></li>
+    </ol>
+
+    <h3>How it differs from a simple agent</h3>
+    <p class="bn-muted">"Simple agent" here means the minimum the Signals spec asks for: a strategy prompt plus the platform's three fixed tools (<code>fetch_target_markets</code>, <code>fetch_market_detail</code>, <code>calc_lmsr_cost</code>). The language model then picks both the probability and the amount. This is a general comparison, not a description of any particular team's agent.</p>
+    <div class="bn-scroll">
+      <table class="bn-cmp">
+        <thead><tr><th></th><th>Simple agent</th><th>Bracket Nowcaster</th></tr></thead>
+        <tbody>
+          <tr><th>What the LLM decides</th><td>A probability for each outcome, and what to buy</td><td>Only a number (centre ± sd) or an event rate</td></tr>
+          <tr><th>Probabilities</th><td>Stated by the LLM, so they may not sum to 100% or match the bracket edges</td><td>Computed from the forecast over the exact bracket edges (JST dates, rounding gaps closed)</td></tr>
+          <tr><th>Uncertainty</th><td>Often too narrow, so the middle bracket gets too much probability</td><td>sd has a minimum for each kind of market, with fat tails. Outer brackets get +15%, because they won all 4 resolved numeric markets on Signals</td></tr>
+          <tr><th>Market price</th><td>Ignored, or used as an anchor</td><td>Weighted by the volume behind it. A price nobody has traded (1/n) counts for nothing</td></tr>
+          <tr><th>Trade size</th><td>A fixed amount, or whatever the LLM writes</td><td>Quarter-Kelly on the LMSR curve, with a minimum edge and a cap on spend per trade</td></tr>
+          <tr><th>Price impact</th><td>Not considered. With liquidity b ≈ 100 SIGS, a 20 SIGS buy moves a 25% outcome by several points</td><td>Included: the size is chosen so the price after the trade stays below the agent's own probability</td></tr>
+          <tr><th>Several markets</th><td>Trades market by market until the limits run out</td><td>Ranks all candidates first, then spends the daily limit on the best ones</td></tr>
+          <tr><th>Can it be audited?</th><td>The reasoning is free text</td><td>Every trade logs forecast → model → market weight → belief → size in one line</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bn-fig" id="weight-fig">
+      <h4>How much the market price counts, by trading volume</h4>
+      <div class="bn-plot" data-draw="weightcurve" data-source="sizing"></div>
+      <span class="bn-muted">The agent's <code>pool_with_market</code> rule with liquidity b = 100 SIGS, about 50 days to the deadline, and model confidence 0.3 (a forecast that is mostly judgment). The market's weight rises with volume, up to a cap of 90%. Grey dots: where both trades actually sat. Because of the volume bug (below), the agent placed both at 0 SIGS and gave the market no weight.</span>
+    </div>
+  </section>
+
   <section class="bn-sec" id="findings">
     <h2>What the decisions show</h2>
     <div class="bn-findings">
@@ -557,6 +594,56 @@ dash.draw('trades', (el) => {
   pending.forEach((f) => f());
 });
 
+// Market weight in pool_with_market (same formula as signals_tools.py)
+function bnMarketWeight(vol, b, days, conf) {
+  const info = vol / (vol + 3 * Math.max(b, 1));
+  const tb = 0.5 * Math.exp(-Math.max(days, 0) / 10);
+  let w = info + (1 - info) * tb * info;
+  const c = Math.max(0.05, Math.min(0.95, conf));
+  w = w * (1 - c) / (w * (1 - c) + c * (1 - w) + 1e-12);
+  return Math.max(0, Math.min(0.9, w));
+}
+
+dash.draw('weightcurve', (el) => {
+  const d = dash.data('sizing');
+  el.replaceChildren();
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const W = Math.max(260, el.clientWidth || 320), H = 210, m = { t: 14, r: 16, b: 34, l: 40 };
+  const x = d3.scaleLog().domain([1, 5000]).range([m.l, W - m.r]);
+  const y = d3.scaleLinear().domain([0, 1]).range([H - m.b, m.t]);
+  const pts = d3.range(0, 3.7, 0.02).map((e) => { const v = Math.pow(10, e); return { v, w: bnMarketWeight(v, 100, 50, 0.3) }; });
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('role', 'img')
+    .attr('aria-label', 'Market weight rises with traded volume: about 10% at 15 SIGS (Hormuz) and the 90% cap at 1,431 SIGS (SpaceX)');
+  svg.append('g').selectAll('line').data([0, 0.25, 0.5, 0.75, 1]).join('line')
+    .attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+  svg.append('g').selectAll('text').data([0, 0.5, 1]).join('text')
+    .attr('x', m.l - 6).attr('y', (v) => y(v) + 4).attr('text-anchor', 'end').text(d3.format('.0%'));
+  svg.append('g').selectAll('text').data([1, 10, 100, 1000]).join('text')
+    .attr('x', x).attr('y', H - m.b + 16).attr('text-anchor', 'middle').text(d3.format(','));
+  svg.append('text').attr('x', (m.l + W - m.r) / 2).attr('y', H - 4).attr('text-anchor', 'middle').text('Volume traded (SIGS, log scale)');
+  svg.append('path').datum(pts).attr('d', d3.line().x((p) => x(p.v)).y((p) => y(p.w)))
+    .style('fill', 'none').style('stroke', dash.colors[0]).style('stroke-width', 2);
+  const tip = bnTip(el);
+  const names = { hormuz: 'Hormuz', spacex: 'SpaceX' };
+  for (const r of d.data) {
+    const v = Number(r.volume_actual_sigs), w = Number(r.weight_actual_pct) / 100;
+    const g = svg.append('g');
+    g.append('circle').attr('cx', x(v)).attr('cy', y(w)).attr('r', 5)
+      .style('fill', 'var(--cds-chart-muted)').style('stroke', 'var(--color-panel)').style('stroke-width', 2);
+    const right = x(v) < W * 0.6;
+    g.append('text').attr('x', x(v) + (right ? 9 : -9)).attr('y', y(w) + (right ? 4 : 16)).attr('text-anchor', right ? 'start' : 'end')
+      .attr('class', 'bn-strong bn-halo').text(`${names[r.trade] || r.trade}: ${d3.format(',.0f')(v)} SIGS → ${d3.format('.0f')(w * 100)}%`);
+    g.append('circle').attr('cx', x(v)).attr('cy', y(w)).attr('r', 14).style('fill', 'transparent')
+      .on('pointerenter pointermove', (ev) => tip.show(ev, [names[r.trade] || r.trade, `Real volume ${d3.format(',.1f')(v)} SIGS`, `Market weight with it ${d3.format('.1f')(w * 100)}%`, 'Agent read: 0 SIGS → weight 0%']))
+      .on('pointerleave', () => tip.hide());
+  }
+  const hit = svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).style('fill', 'transparent').lower();
+  hit.on('pointermove', function (ev) {
+    const v = x.invert(d3.pointer(ev, this)[0]);
+    tip.show(ev, [`${d3.format(',.0f')(v)} SIGS traded`, `Market weight ${d3.format('.0%')(bnMarketWeight(v, 100, 50, 0.3))}`]);
+  }).on('pointerleave', () => tip.hide());
+});
+
 dash.draw('sizing', (tb) => {
   const d = dash.data('sizing');
   tb.replaceChildren();
@@ -679,6 +766,17 @@ dash.draw('tree', {
   .bn-arts a { font-weight: var(--cds-font-weight-medium); }
   .bn-arts .bn-pt { color: var(--color-fg-muted); }
   .bn-pill.ctx { color: var(--color-fg-muted); }
+  .bn-flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); gap: var(--cds-gap-sm); counter-reset: none; }
+  .bn-flow li { position: relative; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; gap: 6px; align-content: start; font-size: var(--cds-font-size-caption); line-height: 1.45; min-width: 0; }
+  .bn-flow li.llm { border-color: var(--color-warn); border-width: 2px; }
+  .bn-flow li b { font-size: var(--cds-font-size-body); }
+  .bn-flow .bn-who { width: fit-content; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; color: var(--color-fg-muted); }
+  .bn-flow li.llm .bn-who { color: var(--color-warn); }
+  .bn-flow .bn-eg { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--color-fg); border-top: 1px dashed var(--color-border-line); padding-top: 6px; margin-top: auto; }
+  .bn-cmp th[scope], .bn-cmp tbody th { color: var(--color-fg); white-space: normal; min-width: 110px; }
+  .bn-cmp td:last-child { color: var(--color-fg); }
+  .bn-cmp td:nth-child(2) { color: var(--color-fg-muted); }
+  #weight-fig { max-width: 720px; }
   .bn-findings { grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
   .bn p { overflow-wrap: anywhere; }
   </style>
