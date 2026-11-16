@@ -1,8 +1,8 @@
 section,metric,value,text,unit,as_of
 headline,price,2629.0,,JPY,2026-11-11
-headline,agent1_target,3076,,JPY,2026-11-13
-headline,agent2_target,3090,,JPY,2026-11-13
-headline,agent3_target,3174,,JPY,2026-11-13
+headline,agent1_target,3076,,JPY,2026-11-16
+headline,agent2_target,3090,,JPY,2026-11-16
+headline,agent3_target,3174,,JPY,2026-11-16
 headline,debate_target,3103,,JPY,2026-11-13
 headline,analyst_target,3404,,JPY,2026-11-13
 headline,expected_return,0.189,,ratio,
@@ -65,7 +65,7 @@ competitor,agent1_target_price,3076,,,
 competitor,target_price_if_applied,3174,,,
 competitor,confidence_current,0.25,,,
 competitor,confidence_suggested,0.25,,,
-competitor,run_at,,2026-11-13,,
+competitor,run_at,,2026-11-16,,
 competitor,field_rows,0,,,
 debate,price,2629.0,,JPY,2026-11-11
 debate,weight_agent1,0.55,,,
