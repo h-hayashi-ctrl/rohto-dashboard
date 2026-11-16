@@ -161,6 +161,15 @@ window.dash = (() => {
 .rx-dot { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
 .rx-up { color: var(--color-ok); }
 .rx-down { color: var(--color-bad); }
+.rx-zones { display: grid; grid-template-columns: minmax(0, 3fr) auto minmax(0, 1fr); gap: var(--cds-gap-md); align-items: stretch; }
+.rx-zone { display: flex; flex-direction: column; gap: var(--cds-gap-sm); padding: var(--cds-pad-md); border: 1.5px dashed var(--cds-chart-reference); border-radius: var(--cds-radius); min-width: 0; }
+.rx-zone-out { border-style: solid; border-color: var(--color-border-line); }
+.rx-zone-h { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.rx-zone-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-sm); }
+.rx-zone .rx-step { border-left: 3px solid var(--sc, var(--color-border-line)); }
+.rx-hop { align-self: center; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-align: center; max-width: 8rem; }
+.rx-hop b { font-size: 22px; line-height: 1; color: var(--color-fg); font-weight: 400; }
+@media (max-width: 720px) { .rx-zones { grid-template-columns: minmax(0, 1fr); } .rx-hop b { transform: rotate(90deg); } }
 .rx-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); counter-reset: none; }
 .rx-step { position: relative; display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); min-width: 0; }
 .rx-step h4 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
@@ -716,6 +725,31 @@ window.dash = (() => {
       <h2 class="rx-h2">Local LLM: cutting Claude use without sending data out</h2>
       <p><b>Result (tested 16 Nov 2026):</b> a local model (Qwen3 8B) is good enough to classify TDnet disclosures, and that data never leaves my own machines. It is not good enough for Agent 4's debate, so the debate stays on Claude Sonnet.</p>
       <p class="rx-note">Why: the seminar asked us to optimise the four-agent pipeline. Anything uploaded to an outside AI service leaves our control, so the goal is to keep data local where we can and call Claude only where quality needs it.</p>
+      <div class="rx-tiles">
+        <div class="rx-tile"><span class="rx-tile-l">Disclosures classified correctly</span><span class="rx-tile-v">98%</span><span class="rx-tile-s">52 of 53, after review</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Time for 62 disclosures</span><span class="rx-tile-v">16 s</span><span class="rx-tile-s">On my gaming PC</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Disclosure data sent to Claude</span><span class="rx-tile-v">None</span><span class="rx-tile-s">Stays on my own machines</span></div>
+        <div class="rx-tile"><span class="rx-tile-l">Debate gap, Qwen vs Sonnet</span><span class="rx-tile-v">−¥200</span><span class="rx-tile-s">−6.5% on the final target</span></div>
+      </div>
+    </section>
+
+    <section class="rx-sec">
+      <h2 class="rx-h2">Where the data goes</h2>
+      <div class="rx-zones" role="img" aria-label="Data sources, Python and Qwen stay inside my own machines on Tailscale. Only Agent 1 to 3 output numbers go out to Claude Sonnet, and only for the debate.">
+        <div class="rx-zone">
+          <span class="rx-zone-h">Inside my network (laptop, home server, gaming PC on Tailscale)</span>
+          <div class="rx-zone-row">
+            <div class="rx-step"><span class="rx-step-k">Inputs</span><h4>Data sources</h4><p>Filings, TDnet, prices, Google Trends, in-store observations</p></div>
+            <div class="rx-step" style="--sc: var(--s0)"><span class="rx-step-k">Python</span><h4>Agents 1–3</h4><p>All calculations. Same data, same answer</p></div>
+            <div class="rx-step" style="--sc: var(--s2)"><span class="rx-step-k">Qwen3 8B</span><h4>Classify disclosures</h4><p>Type and guidance up/down, written as proposals</p></div>
+          </div>
+        </div>
+        <div class="rx-hop"><b>→</b>Agent 1–3 numbers only, when a re-debate triggers</div>
+        <div class="rx-zone rx-zone-out">
+          <span class="rx-zone-h">Outside service</span>
+          <div class="rx-step" style="--sc: var(--s1)"><span class="rx-step-k">Claude Sonnet</span><h4>Agent 4 debate</h4><p>Arguments and the final target</p></div>
+        </div>
+      </div>
     </section>
 
     <section class="rx-sec">
@@ -736,6 +770,11 @@ window.dash = (() => {
     <section class="rx-sec">
       <h2 class="rx-h2">Test 1 · Classifying disclosures</h2>
       <p>62 TDnet disclosures, classified by title alone in 16 seconds. After I checked the disagreements, 52 of 53 were right.</p>
+      <div class="rx-card">
+        <h3>Qwen's answers on the 53 disclosures the keyword rules could classify</h3>
+        <div class="rx-chart" style="min-height:92px" data-draw="llm-class-chart"></div>
+        <p class="rx-note">Where Qwen and the keywords disagreed, I checked each title myself. Qwen was right in 6 of those 7 cases.</p>
+      </div>
       <div class="rx-card">
         <div class="rx-tablebox" style="max-height:none"><table class="rx-table">
           <thead><tr><th>Measure</th><th>Result</th></tr></thead>
@@ -758,6 +797,20 @@ window.dash = (() => {
     <section class="rx-sec">
       <h2 class="rx-h2">Test 2 · Agent 4's debate</h2>
       <p>Same inputs every run (Agent 1–3 at ¥3,076 / ¥3,090 / ¥3,174, price ¥2,629). Sonnet agreed with itself to within ¥5; Qwen came out about ¥200 lower, for the wrong reason.</p>
+      <div class="rx-legend"><span><i class="rx-sw" style="background:var(--s0)"></i>Agent 1</span><span><i class="rx-sw" style="background:var(--s1)"></i>Agent 2</span><span><i class="rx-sw" style="background:var(--s4)"></i>Agent 3</span><span><i class="rx-sw" style="background:var(--color-fg)"></i>Moderator's final</span></div>
+      <div class="rx-grid">
+        <div class="rx-card">
+          <h3>Sonnet: the agents hold their cases</h3>
+          <p>Agent 3 gives ground after a rebuttal. The final target sits between the three.</p>
+          <div class="rx-chart" data-draw="llm-debate-chart" data-run="sonnet"></div>
+        </div>
+        <div class="rx-card">
+          <h3>Qwen3 8B: everyone collapses to one wrong number</h3>
+          <p>Agent 1 opens with ¥2,901, an intermediate value, and the others follow.</p>
+          <div class="rx-chart" data-draw="llm-debate-chart" data-run="qwen"></div>
+        </div>
+      </div>
+      <p class="rx-note">Sonnet shown is rerun 2; the other two Sonnet runs ended within ¥5 of it. Both Qwen runs were identical. Same y-axis on both charts.</p>
       <div class="rx-card">
         <div class="rx-tablebox" style="max-height:none"><table class="rx-table">
           <thead><tr><th>Run</th><th class="n">Final target</th><th class="n">Expected return</th><th>View</th><th>Agents' final positions</th></tr></thead>
@@ -1400,6 +1453,81 @@ dash.draw('debate-chart', (node) => {
   R.spread(labels, 14, 10, H - 24);
   s.append('g').selectAll('text').data(labels).join('text').attr('class', 'rx-lab').attr('x', (d) => d.x).attr('y', (d) => d.y).attr('fill', (d) => d.c).text((d) => d.t);
 });
+// Local LLM tab: one stacked bar of Qwen's classification results (static, from the 16 Nov 2026 test).
+dash.draw('llm-class-chart', (node) => {
+  node.replaceChildren();
+  const parts = [
+    { name: 'Agreed with the keywords', n: 46, c: R.C(0) },
+    { name: 'Disagreed, Qwen right', n: 6, c: R.C(2) },
+    { name: 'Disagreed, Qwen wrong', n: 1, c: R.C(1) },
+  ];
+  const total = d3.sum(parts, (d) => d.n);
+  const H = 92, { s, w } = R.svg(node, H);
+  const x = d3.scaleLinear([0, total], [0, w]);
+  const t = R.tip(node);
+  let at = 0;
+  const bars = parts.map((d) => { const o = { ...d, x0: at, x1: at + d.n }; at += d.n; return o; });
+  s.append('g').selectAll('rect').data(bars).join('rect')
+    .attr('x', (d) => x(d.x0) + (d.x0 ? 1 : 0)).attr('width', (d) => Math.max(2, x(d.x1) - x(d.x0) - (d.x0 ? 1 : 0) - (d.x1 < total ? 1 : 0)))
+    .attr('y', 22).attr('height', 28).attr('rx', 4).attr('fill', (d) => d.c)
+    .on('pointermove', (ev, d) => { const [mx, my] = d3.pointer(ev, node); t.show(mx, my, d.name, [{ color: d.c, name: 'Disclosures', value: `${d.n} of ${total} (${d3.format('.0%')(d.n / total)})` }]); })
+    .on('pointerleave', () => t.hide());
+  s.append('text').attr('class', 'rx-lab').attr('x', 0).attr('y', 14).text(`Agreed ${parts[0].n}`);
+  s.append('text').attr('class', 'rx-lab').attr('x', w).attr('y', 14).attr('text-anchor', 'end').text(`Qwen right ${parts[1].n} · wrong ${parts[2].n}`);
+  const legend = [['Agreed', 0], ['Qwen right', 2], ['Qwen wrong', 1]];
+  let lx = 0;
+  for (const [name, ci] of legend) {
+    s.append('rect').attr('x', lx).attr('y', 66).attr('width', 10).attr('height', 10).attr('rx', 2).attr('fill', R.C(ci));
+    const tx = s.append('text').attr('class', 'rx-tick').attr('x', lx + 15).attr('y', 75).text(name);
+    lx += 15 + tx.node().getComputedTextLength() + 18;
+  }
+  if (w >= 520) s.append('text').attr('class', 'rx-tick').attr('x', w).attr('y', 75).attr('text-anchor', 'end').text('52 / 53 correct after review');
+});
+
+// Local LLM tab: target price through the debate, one chart per model (static, same inputs).
+const LLM_DEBATE = {
+  steps: ['Computed', 'Round 1', 'Final'],
+  price: 2629,
+  sonnet: { agents: [[3076, 3076, 3076], [3090, 3090, 3090], [3174, 3174, 3141]], final: 3098 },
+  qwen: { agents: [[3076, 2901, 2901], [3090, 3090, 2901], [3174, 3174, 2901]], final: 2901 },
+};
+dash.draw('llm-debate-chart', (node) => {
+  node.replaceChildren();
+  const run = LLM_DEBATE[node.dataset.run], D = LLM_DEBATE;
+  const names = ['Agent 1', 'Agent 2', 'Agent 3'], cols = [R.C(0), R.C(1), R.C(4)];
+  const H = 260, { s, w } = R.svg(node, H);
+  const y = d3.scaleLinear([2850, 3200], [H - 24, 12]);
+  const yt = [2900, 3000, 3100, 3200], ml = R.textW(s, yt.map(R.F.yen)) + 8;
+  const mr = R.textW(s, ['Final ¥0,000']) + 16;
+  const x = d3.scalePoint([...D.steps, 'Moderator'], [ml + 18, w - mr]).padding(0.1);
+  s.append('g').selectAll('line').data(yt).join('line').attr('class', 'rx-gl').attr('x1', ml).attr('x2', w - mr + 8).attr('y1', y).attr('y2', y);
+  s.append('g').selectAll('text').data(yt).join('text').attr('class', 'rx-tick').attr('x', ml - 6).attr('y', (v) => y(v) + 4).attr('text-anchor', 'end').text(R.F.yen);
+  const narrow = w < 480, short = { Computed: 'Start', 'Round 1': 'R1', Final: 'Final', Moderator: 'Mod.' };
+  s.append('g').selectAll('text').data([...D.steps, 'Moderator']).join('text').attr('class', 'rx-tick').attr('x', (d) => x(d)).attr('y', H - 4).attr('text-anchor', 'middle').text((d) => (narrow ? short[d] : d));
+  const t = R.tip(node);
+  const labels = [];
+  run.agents.forEach((vals, i) => {
+    const pts = vals.map((v, k) => ({ x: x(D.steps[k]), y: y(v), v, st: D.steps[k] }));
+    s.append('path').attr('fill', 'none').attr('stroke', cols[i]).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', d3.line().x((p) => p.x).y((p) => p.y)(pts));
+    s.append('g').selectAll('circle').data(pts).join('circle').attr('cx', (p) => p.x).attr('cy', (p) => p.y).attr('r', 4.5).attr('fill', cols[i]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 2)
+      .on('pointermove', (ev, p) => t.show(p.x, p.y, `${names[i]} · ${p.st}`, [{ color: cols[i], name: 'Target', value: R.F.yen(p.v) }])).on('pointerleave', () => t.hide());
+    const last = pts[pts.length - 1];
+    labels.push({ y: last.y + 4, t: names[i].replace('Agent ', 'A') });
+  });
+  const fx = x('Moderator'), fy = y(run.final);
+  s.append('circle').attr('cx', fx).attr('cy', fy).attr('r', 7).attr('fill', 'var(--color-fg)').attr('stroke', 'var(--color-panel)').attr('stroke-width', 2)
+    .on('pointermove', () => t.show(fx, fy, "Moderator's final", [{ color: 'var(--color-fg)', name: 'Target', value: R.F.yen(run.final) }])).on('pointerleave', () => t.hide());
+  s.append('text').attr('class', 'rx-lab').attr('x', fx + 12).attr('y', fy + 4).text('Final ' + R.F.yen(run.final));
+  // Labels only where lines end apart; collapsed lines share one label.
+  const seen = new Map();
+  for (const l of labels) { const k = Math.round(l.y); seen.set(k, seen.has(k) ? seen.get(k) + ' · ' + l.t : l.t); }
+  // Separate lines: labels right of the Final points. Lines that collapse into one point: one label under it.
+  const split = [...seen].map(([yy, tt]) => ({ y: +yy, t: tt })), merged = split.filter((d) => d.t.includes('·'));
+  const uniq = R.spread(split.filter((d) => !d.t.includes('·')), 14, 12, H - 30);
+  s.append('g').selectAll('text').data(uniq).join('text').attr('class', 'rx-lab').attr('x', x('Final') + 10).attr('y', (d) => d.y).text((d) => d.t);
+  s.append('g').selectAll('text').data(merged).join('text').attr('class', 'rx-lab').attr('x', x('Final')).attr('y', (d) => d.y + 14).attr('text-anchor', 'middle').text((d) => d.t);
+});
+
 
 // Agent 3
 dash.draw('comp-body', (tb) => {
